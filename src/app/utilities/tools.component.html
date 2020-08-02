@@ -18,32 +18,49 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 </div>
             </div>
             <div class="panel-body">
-                <p-dataTable [value]="databaseBackups" 
+                <h4>Backups</h4>
+                 
+                <p-table [value]="databaseBackups" 
                              selectionMode="single"
                              [(selection)]="selectedDbBackup"
                              (onRowSelect)="onDbBackupRowSelect($event)"
                              [paginator]="true" rows="15" [responsive]="true">
-                    <p-header>Backups</p-header>
-                    <p-column  header="File" [sortable]="true"  >
-                        <ng-template let-col let-q="rowData" let-ri="rowIndex" pTemplate="body"  >
-                            <div>{{q}}</div>
+                             <ng-template pTemplate="header">
+                                <tr>
+                                    <th>File</th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body"  let-q="rowData" let-ri="rowIndex" >
+                                <tr>
+                                    <td>
+                                        <div>{{q}}</div>
+                                     </td>
+                                    </tr>
+
+                                </ng-template>
+                                   
+                            <ng-template pTemplate="footer">
+                            <tr>
+                                <td >
+                                    {{selectedDbBackup}}
+                                    <div class="cell-block">
+                                        <button *ngIf="!processingRequest" id="btnBackupDatabase" (click)="btnBackupDatabaseClick($event)" type="button" class="form-control" style="width:100px;float:right;margin-right: .3em;">
+                                            Backup
+                                        </button>
+                                    </div>
+                                    <div class="cell-block">
+                                        <button *ngIf="!processingRequest" id="btnRestoreDatabase" (click)="btnRestoreDatabaseClick($event)" type="button" class="form-control" style="width:100px;float:right;margin-right: .3em;margin-top:.3em;">
+                                            Restore
+                                        </button>
+                                    </div>
+                                </td>
+                               
+                            </tr>
                         </ng-template>
-                    </p-column>
-                   
-                    <p-footer>
-                        {{selectedDbBackup}}
-                            <div class="cell-block">
-                                <button *ngIf="!processingRequest" id="btnBackupDatabase" (click)="btnBackupDatabaseClick($event)" type="button" class="form-control" style="width:100px;float:right;margin-right: .3em;">
-                                    Backup
-                                </button>
-                            </div>
-                            <div class="cell-block">
-                                <button *ngIf="!processingRequest" id="btnRestoreDatabase" (click)="btnRestoreDatabaseClick($event)" type="button" class="form-control" style="width:100px;float:right;margin-right: .3em;margin-top:.3em;">
-                                    Restore
-                                </button>
-                            </div>
-                    </p-footer>
-                </p-dataTable>
+                      
+                </p-table>
+                
             </div>
             <div class="panel-footer">
               
@@ -127,10 +144,11 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         (onUpload)="onFileUpload($event )" accept=".txt,.json,.csv/*" maxFileSize="1000000000000"></p-fileUpload>
                     
                 </div>
-                <!--
+               
                 <br/>
                 <label>Import files on server:</label>
                 <div class="row">
+                    
                     <div class="col-md-6">
                         <select id="cboImportFiles" class="form-control input-sm" style="width:100%;"
                                 [(ngModel)]="selectedImportFile">
@@ -139,15 +157,16 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             </option>
                         </select>
                     </div>
-
+ 
                     <div class="col-md-6">
                         <button *ngIf="!processingRequest" id="btnImportFiles" (click)="btnImportFilesClick($event)" 
                                 type="button" class="form-control" style="width:100px;float:left;margin-bottom:.3em;">
                             Import
                         </button>
                     </div>
+                     
                 </div>
-            -->
+            
             </div>
             <div class="panel-footer">
                
@@ -169,7 +188,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         Scan Names
                     </button>
                 </div>
-                <p-dataTable [value]="scanResult"
+                <p-table [value]="scanResult"
                              [totalRecords]="scanResultCount"
                              selectionMode="single"
                              [(selection)]="selectedDuplicate"
@@ -177,11 +196,19 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                              [paginator]="true"
                              rows="25"
                              [responsive]="true">
-                    <p-header>Duplicates</p-header>
-                    <p-column field="key" header="Name" [sortable]="true" ></p-column>
-                    <p-footer>
-                    </p-footer>
-                </p-dataTable>
+                             <ng-template pTemplate="header">
+                                <tr>
+                                    <th>
+                                        Duplicates
+                                    </th>
+                                </tr>
+                  
+                </ng-template>
+                <ng-template pTemplate="body" let-res>
+                    <tr><td>{{res.key}}</td></tr>
+                </ng-template>
+                  
+                </p-table>
 
                 <table>
                     <tr><th>Table and Name</th><th>Account</th><th>Action</th></tr>

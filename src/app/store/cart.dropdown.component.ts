@@ -2,7 +2,7 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Component, OnInit } from '@angular/core';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { StoreService } from '../services/store.service';
 import { ShoppingCart } from '../models/shoppingcart';
 
@@ -20,7 +20,6 @@ import { ShoppingCart } from '../models/shoppingcart';
 
             </ul>
     </li>`,
-    providers: [SessionService, StoreService]
 
 })
 
@@ -29,13 +28,15 @@ export class CartDropdownComponent implements OnInit {
     cartDropDownExpanded = false;
     showInMenubar = false;
 
-    constructor(private _sessionService: SessionService,
-        private _storeService: StoreService) {
+    constructor(
+        private _sessionService: SessionService,
+        private _storeService: StoreService
+        ) {
     }
 
     ngOnInit() {
 
-        const cartUUID = this._sessionService.getCart();
+       const cartUUID = this._sessionService.getCart();
 
         if (!cartUUID || cartUUID === '') {// if no cart create one.
             this.showInMenubar = false;
@@ -55,6 +56,7 @@ export class CartDropdownComponent implements OnInit {
                 return false;
             }
         });
+      
         this.showInMenubar = true;
     }
 

@@ -8,7 +8,7 @@ import { FormsModule, FormBuilder, FormGroup, Validators, FormControl, ReactiveF
 import { StoreService } from '../services/store.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, InputSwitchModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, InputSwitchModule } from 'primeng/primeng';
 import { StepsModule, MenuItem } from 'primeng/primeng';
 
 import { AddressComponent } from './address.component';
@@ -27,9 +27,9 @@ import { User } from '../models/user';
 import { AppService } from '../services/app.service';
 import { CookieService } from 'angular2-cookie/services/cookies.service';
 import { FinanceService } from '../services/finance.service';
-import { SessionService } from '../services/session.service';
-import { UserService } from '../services/user.service';
-
+import { SessionService } from '../services/user/session.service';
+import { UserService } from '../services/user/user.service';
+import {Api} from '../services/api';
 @Component({
 
     templateUrl: './checkout.component.html',
@@ -43,7 +43,7 @@ import { UserService } from '../services/user.service';
     //   See install component for example
 export class CheckOutComponent implements OnInit {
 
-    private items: MenuItem[];
+     items: MenuItem[];
     activeIndex = 0;
 
     step1Valid = false;
@@ -87,22 +87,21 @@ export class CheckOutComponent implements OnInit {
         private _sessionService: SessionService,
         private _financeService: FinanceService) {
 
-        this.msgBox = new MessageBoxesComponent();
 
         this.formCheckout = fb.group({
             UserName: '',
-            RememberMe: '',
-            UserPassword: '',
+             RememberMe: '',
+              UserPassword: '',
             ConfirmPassword: '',
-            UserEmail: '',
-            SecurityQuestion: '',
-            UserSecurityAnswer: '',
+             UserEmail: '',
+             SecurityQuestion: '',
+             UserSecurityAnswer: '',
             CouponCode: '',
         });
     }
 
     ngOnInit() {
-        this.baseUrl = this._appService.BaseUrl();
+        this.baseUrl =  Api.url;
         this.items = [{ label: 'Account', }, { label: 'Shipping' }, { label: 'Payment' }
         ];
 
@@ -117,7 +116,7 @@ export class CheckOutComponent implements OnInit {
 
         this._appService.getPublicSettings(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -130,7 +129,7 @@ export class CheckOutComponent implements OnInit {
 
         if (!cartUUID || cartUUID === '') {
             this.isValidCart = false;
-            this.msgBox.ShowMessage('error', 'You do not have a any items to checkout!', 15);
+            this.msgBox.ShowMessage('error', 'You do not have a any items to checkout!');
             return;
         }
 
@@ -181,13 +180,13 @@ export class CheckOutComponent implements OnInit {
             this.loadPaymentOptions();
             //    If client is logged in set the flags and then check if they have anything that needs
             //    to be shipped.
-            if (this._sessionService.CurrentSession.validSession) {
+            if (this._sessionService.CurrentSession.ValidSession) {
                 this.loggedIn = true;
                 this.activeIndex = 1; //  don't need to login go to next tab.
                 this.step1Valid = true;
-                this.shoppingCart.UserUUID = this._sessionService.CurrentSession.userUUID;
-                this.shoppingCart.customer.UUID = this._sessionService.CurrentSession.userUUID;
-                this.shoppingCart.customer.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+                this.shoppingCart.UserUUID = this._sessionService.CurrentSession.UserUUID;
+                this.shoppingCart.customer.UUID = this._sessionService.CurrentSession.UserUUID;
+                this.shoppingCart.customer.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
             }
 
             if (this.requiresShipping === false || this.shoppingCart.ShippingAddress.isValid === true ) {
@@ -267,7 +266,7 @@ export class CheckOutComponent implements OnInit {
 
         this._financeService.getPriceRule(this.shoppingCart.coupon.Code).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -275,10 +274,10 @@ export class CheckOutComponent implements OnInit {
             this.shoppingCart = this._storeService.calcCartTotals(this.shoppingCart);
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -304,23 +303,23 @@ export class CheckOutComponent implements OnInit {
         frmLogin.Password = this.formCheckout.get('UserPassword').value;
         frmLogin.UserName = this.formCheckout.get('UserName').value;
 
-        const result = this._userService.login(frmLogin);
+        const result = this._sessionService.login(frmLogin);
         result.subscribe(
             response => {
                 this.authorizing = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
 
                 this.step1Valid = true;
                 this.loggedIn = true;
                 this.formCheckout.markAsPristine();
-                this._sessionService.CurrentSession.authToken = response.Result.Authorization;
-                this._sessionService.CurrentSession.isAdmin = response.Result.IsAdmin;  //  .set('userUUID', response.UserUUID)
-                this._sessionService.CurrentSession.userAccountUUID = response.Result.AccountUUID;
-                this._sessionService.CurrentSession.userUUID = response.Result.UserUUID;
-                this._sessionService.CurrentSession.defaultLocationUUID = response.Result.DefaultLocationUUID;
+                 Api.authToken = response.Result.Authorization;
+                this._sessionService.CurrentSession.IsAdmin = response.Result.IsAdmin;  //  .set('userUUID', response.UserUUID)
+                this._sessionService.CurrentSession.AccountUUID = response.Result.AccountUUID;
+                this._sessionService.CurrentSession.UserUUID = response.Result.UserUUID;
+                this._sessionService.CurrentSession.DefaultLocationUUID = response.Result.DefaultLocationUUID;
                 this.shoppingCart.AccountUUID = response.Result.AccountUUID;
                 this.shoppingCart.UserUUID = response.Result.UserUUID;
                 this.shoppingCart.CreatedBy = response.Result.UserUUID;
@@ -328,16 +327,16 @@ export class CheckOutComponent implements OnInit {
                 this.shoppingCart.customer.AccountUUID = response.Result.AccountUUID;
 
                 //    this._sessionService.CurrentSession.sessionExpires.setMinutes(response.Result.SessionLength);
-                this._sessionService.CurrentSession.validSession = true;
-                this._sessionService.SaveSessionState();
+                this._sessionService.CurrentSession.ValidSession = true;
+                this._sessionService.saveSessionLocal();
                 this.onClickNextStep(); //  move to next step so user doesn't have to click
             },
             err => {
                 this.authorizing = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.logOut();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -349,30 +348,9 @@ export class CheckOutComponent implements OnInit {
 
     logOut() {
         this.authorizing = true;
-
-        const result = this._userService.logout();
-        result.subscribe(
-            response => {
-                this.authorizing = false;
-                if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
-                    return false;
-                }
-            },
-            err => {
-                this.authorizing = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
-
-                if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
-                    setTimeout(() => {
-                        this._router.navigate(['/membership/login'], { relativeTo: this._route });
-                    }, 3000);
-                }
-
-            }
-        );
-        this._sessionService.ClearSessionState();
+        
+        this._sessionService.logOut();
+        this.authorizing = false;
     }
 
     registerUser(event) {
@@ -391,7 +369,7 @@ export class CheckOutComponent implements OnInit {
         result.subscribe(response => {
             this.authorizing = false;
             if (response.Code !== 200 || response.Message !== '' ) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 if (response.Message !== '') {
                    //   this.enableNext = true;
                     this.step1Valid = true;
@@ -405,10 +383,10 @@ export class CheckOutComponent implements OnInit {
             this.onClickNextStep(); //  move to next step so user doesn't have to click
         }, err => {
             this.authorizing = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -455,7 +433,7 @@ export class CheckOutComponent implements OnInit {
         const res = this._financeService.getPaymenOptions();
         res.subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.paymentOptions = response.Result;
@@ -475,7 +453,7 @@ export class CheckOutComponent implements OnInit {
         this._storeService.checkOut(this.shoppingCart).subscribe(response => {
             //  post info to server and save
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -496,14 +474,14 @@ export class CheckOutComponent implements OnInit {
 
             this._appService.getPublicSettings(filter).subscribe( response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const domain = response.Result;
                 //  todo get app setting if this a  POS system don't show this message
                 this.msgBox.ShowMessage('info',
                     'Thank you for shopping at ' + domain +
-                    '. A confirmation email will be sent. Check your spam/junk folder for the confirmation email if you have not received it.', 35);
+                    '. A confirmation email will be sent. Check your spam/junk folder for the confirmation email if you have not received it.' );
             });
 
         });

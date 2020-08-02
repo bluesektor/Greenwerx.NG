@@ -1,13 +1,12 @@
 ﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; //
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../services/user/user.service';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
 
 @Component({
 
     templateUrl: './login-help.component.html',
-    providers: [UserService]
 })
 
 export class LoginHelpComponent {
@@ -18,13 +17,13 @@ export class LoginHelpComponent {
     public forgotPassword = false;
     public resendValidation = false;
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+    
     constructor(
         fb: FormBuilder,
         private _userService: UserService,
         private _router: Router,
         private _route: ActivatedRoute
+        ,private msgBox : MessageBoxesComponent
     ) {
 
         this.form = fb.group({
@@ -60,20 +59,20 @@ export class LoginHelpComponent {
                 this.sending = false;
                 if (response.Code !== 200) {
 
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.form.markAsPristine();
 
                 if (this.forgotPassword) {
-                    this.msgBox.ShowMessage(response.Status, 'Please check your email for instructions on updating your password.', 10);
+                    this.msgBox.ShowMessage(response.Status, 'Please check your email for instructions on updating your password.');
                 } else {
-                    this.msgBox.ShowMessage(response.Status, 'Please check your email for your account information.', 10);
+                    this.msgBox.ShowMessage(response.Status, 'Please check your email for your account information.');
                 }
             },
             err => {
                 this.sending = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
             }
         );
     }

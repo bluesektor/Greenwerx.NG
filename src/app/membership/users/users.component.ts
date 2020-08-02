@@ -1,15 +1,14 @@
 ﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { User } from '../../models/user';
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../services/user/user.service';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule } from 'primeng';
 
 @Component({
     templateUrl: './users.component.html',
-    providers: [UserService, SessionService]
 
 })
 export class UsersComponent implements OnInit {
@@ -26,15 +25,15 @@ export class UsersComponent implements OnInit {
 
     newUser: boolean;
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+   
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _userService: UserService,
-        private _sessionService: SessionService) {
-
-       this.msgBox = new MessageBoxesComponent();
+        private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent
+        ) {
+ 
 
     }
 
@@ -61,7 +60,7 @@ export class UsersComponent implements OnInit {
                 this.processingRequest = false;
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
 
@@ -69,15 +68,15 @@ export class UsersComponent implements OnInit {
                  // Here, with the splice method, we remove 1 object
                  // at the given index.
                 this.users.splice(index, 1);
-                this.msgBox.ShowMessage('info', 'User deleted.', 10    );
+                this.msgBox.ShowMessage('info', 'User deleted.');
                 this.loadUsers(); // not updating the list so reload for now.
 
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -97,7 +96,7 @@ export class UsersComponent implements OnInit {
         this.msgBox.closeMessageBox();
 
         if (this.user.AccountUUID === '' || this.user.AccountUUID == null ) {
-            this.user.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+            this.user.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
         }
 
         this.processingRequest = true;
@@ -116,16 +115,16 @@ export class UsersComponent implements OnInit {
 
             this.displayDialog = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newUser) { // add
-                this.msgBox.ShowMessage('info', 'User added', 10   );
+                this.msgBox.ShowMessage('info', 'User added');
                 this.user.UUID = response.Result;
                 this.users.push(this.user);
             } else { // update
-                this.msgBox.ShowMessage('info', 'User updated', 10   );
+                this.msgBox.ShowMessage('info', 'User updated');
                 this.users[this.findSelectedUserIndex()] = this.user;
             }
             this.loadUsers(); // not updating the list so reload for now.
@@ -133,10 +132,10 @@ export class UsersComponent implements OnInit {
              this.user = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

@@ -8,11 +8,11 @@ import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { AccordionModule } from 'primeng/primeng';
 import { CheckboxModule } from 'primeng/primeng';
 import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng/primeng';
 
 import { ProductService } from '../services/product.service';
 import { Vendor } from '../models/vendor';
@@ -45,7 +45,7 @@ export class VendorsExComponent implements OnInit {
 
     ngOnInit() {
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
 
@@ -58,17 +58,17 @@ export class VendorsExComponent implements OnInit {
         const res = this._productService.getVendors(this.vendorFilter);
         res.subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             this.vendors = response.Result;
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -129,11 +129,11 @@ export class VendorsExComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Vendor deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Vendor deleted.');
             const index = this.findSelectedIndex(this.vendor);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -142,10 +142,10 @@ export class VendorsExComponent implements OnInit {
 
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logout();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -181,7 +181,7 @@ export class VendorsExComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -197,10 +197,10 @@ export class VendorsExComponent implements OnInit {
             this.vendor = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logout();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

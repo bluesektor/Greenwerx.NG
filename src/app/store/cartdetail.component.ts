@@ -5,13 +5,13 @@ import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; //
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { StoreService } from '../services/store.service';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { ShoppingCart } from '../models/shoppingcart';
 
 @Component({
 
     templateUrl: './cartdetail.component.html',
-    providers: [StoreService, SessionService]
+  
 
 })
 
@@ -29,7 +29,7 @@ export class CartDetailComponent implements OnInit {
         private _sessionService: SessionService,
         private _storeService: StoreService ) {
 
-       this.msgBox = new MessageBoxesComponent();
+      
     }
 
     ngOnInit() {
@@ -66,7 +66,7 @@ export class CartDetailComponent implements OnInit {
         const itm = this.shoppingCart.CartItems[idx];
         this._storeService.deleteCartItem(this.shoppingCart.UUID, cartItemUUID, itm.UUID ).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 

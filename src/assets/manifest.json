@@ -1,0 +1,15 @@
+{
+    "environment": "local",
+    "name": "GreenWerx.org",
+    "short_name": "GreenWerx",
+    "start_url": "index.html",
+    "display": "standalone",
+    "version": "ALPHA-S1",
+    "icons": [{
+      "src": "img/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }],
+    "background_color": "#387ef5",
+    "theme_color": "#387ef5"
+  }

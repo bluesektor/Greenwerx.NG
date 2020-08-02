@@ -5,18 +5,16 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
-import { CheckboxModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
 
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng';
 import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.service';
 
-import { CommontmModule } from '../common/commontm.module';
+import { CommonModuleEx } from '../common/common.moduleex';
 import { LocationsComponent } from './locations.component';
 import { MessageBoxesModule } from '../common/messageboxes.module';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 
 import { GeoService } from '../services/geo.service';
 import {GeoRoutingModule} from './geo.routing';
@@ -25,10 +23,9 @@ import {GeoRoutingModule} from './geo.routing';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule,
+        CommonModuleEx,
         CheckboxModule,
-        DataTableModule,
+        TableModule,
         AccordionModule,
         SharedModule,
         DialogModule,
@@ -44,12 +41,6 @@ import {GeoRoutingModule} from './geo.routing';
     exports: [
         LocationsComponent
     ],
-    providers: [
-        GeoService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService
-    ]
 })
 export class GeoModule {
 

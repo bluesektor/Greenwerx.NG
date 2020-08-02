@@ -16,24 +16,24 @@
                     </select>
                 </div>
             <div class="cell-block">
-                    <button (click)="onClickSetActiveAccount()" *ngIf="!settingActiveAccount" class="form-control input-sm"
-                             [disabled]='accountDetail.UUID == activeAccount?.UUID'
+                    <button (click)="onClickSetActiveAccount($event)" *ngIf="!settingActiveAccount" class="form-control input-sm"
+                            
                              value="Set Default"  > <i class="fa fa-check-circle-o icon-large"></i></button>
                     <div *ngIf="settingActiveAccount" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
                 </div>
             <div class="cell-block">
-                    <button (click)="onClickAddNewAccount()"  class="form-control input-sm" value="New Account">
+                    <button (click)="onClickAddNewAccount($event)"  class="form-control input-sm" value="New Account">
                         <i class="fa fa-plus icon-large" style="color:green;"></i>
                     </button>
                   
                 </div>
             <div class="cell-block">
                 
-                <button pbutton="" type="button"  class="form-control input-sm" value="Delete Account"  (click)="onClickDeleteAccountDetail()"  
+                <button pbutton="" type="button"  class="form-control input-sm" value="Delete Account"  (click)="onClickDeleteAccountDetail($event)"  
                          [disabled]='accountDetail.UUID == activeAccount?.UUID'               >
                     <i class="fa fa-trash"  style="color:red;"></i></button>
                 <p-confirmDialog width="425"></p-confirmDialog>
-                <p-growl [value]="msgs"></p-growl>
+               <div>{{msgs}}</div>>
             </div>
             <div *ngIf="deletingData" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
             <br/>

@@ -4,11 +4,11 @@
 import { Component, ElementRef, ViewChild, OnInit, HostListener, Input, Output, EventEmitter  } from '@angular/core';
 
 import { Router, ActivatedRoute } from '@angular/router';
-import { CheckboxModule, FileUploadModule } from 'primeng/primeng';
+import { CheckboxModule, FileUploadModule } from 'primeng';
 
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule } from 'primeng';
 import { Filter } from '../../models/filter';
 import { Screen } from '../../models/screen';
 import { FinanceService } from '../../services/finance.service';
@@ -17,11 +17,10 @@ import { ShoppingCart } from '../../models/shoppingcart';
 import { Setting } from '../../models/setting';
 import { StoreService } from '../../services/store.service';
 import { Address } from '../../models/address';
-
+import {Api} from '../../services/api';
 @Component({
     templateUrl: './paypal.component.html',
     selector: 'tm-finance-gateways-paypal',
-    providers: [SessionService, FinanceService, AppService, StoreService]
 
 })
 export class PayPalComponent implements OnInit {
@@ -45,7 +44,7 @@ export class PayPalComponent implements OnInit {
     @Input() financeAccountUUID;
     @Output() checkout = new EventEmitter<any>();
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
+  
     @ViewChild('btnPayPalSubmit') btnPayPalSubmit: ElementRef;
 
     constructor(
@@ -54,11 +53,12 @@ export class PayPalComponent implements OnInit {
         private _appService: AppService,
         private _storeService: StoreService,
         private _sessionService: SessionService,
-        private _objService: FinanceService) {
+        private _objService: FinanceService
+        ,private msgBox : MessageBoxesComponent) {
     }
 
     ngOnInit() {
-        this.baseUrl = this._appService.BaseUrl();
+        this.baseUrl = Api.url;
         this.paypalImg = this.baseUrl + 'Content/Default/Images/checkout-logo-medium.png';
         const cartUUID = this._sessionService.getCart();
 
@@ -70,7 +70,7 @@ export class PayPalComponent implements OnInit {
         this._storeService.getShoppingCart(cartUUID).subscribe(response => {
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return;
             }
             this.shoppingCart = response.Result;
@@ -82,7 +82,7 @@ export class PayPalComponent implements OnInit {
         filter.PageSize = 100;
         this._appService.getPublicSettings(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.settings = response.Result;

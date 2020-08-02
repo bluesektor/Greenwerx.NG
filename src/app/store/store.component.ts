@@ -7,15 +7,15 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { AppService } from '../services/app.service';
 
-import { DataGridModule, PanelModule } from 'primeng/primeng';
+import { TableModule, PanelModule } from 'primeng/primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { ProductService } from '../services/product.service';
 import { InventoryService } from '../services/inventory.service';
 import { StoreService } from '../services/store.service';
 import { GeoService } from '../services/geo.service';
-import { AccountService } from '../services/account.service';
+import { AccountService } from '../services/user/account.service';
 import { Account } from '../models/account';
 import { InventoryItem } from '../models/inventory';
 import { Setting } from '../models/setting';
@@ -71,7 +71,7 @@ export class StoreComponent implements OnInit {
 
         this._appService.getPublicSettings(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -84,7 +84,7 @@ export class StoreComponent implements OnInit {
         fltInventory.PageResults = true;
         fltInventory.StartIndex = 1;
         fltInventory.PageSize = 20;
-        this.loadInventory(this._sessionService.CurrentSession.defaultLocationUUID, fltInventory);
+        this.loadInventory(this._sessionService.CurrentSession.DefaultLocationUUID, fltInventory);
         this.createShoppingCart();
     }
 
@@ -96,17 +96,17 @@ export class StoreComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.inventoryItems = response.Result;
             this.totalInventoryItems = response.TotalRecordCount;
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -122,7 +122,7 @@ export class StoreComponent implements OnInit {
             this._storeService.getNewShoppingCart().subscribe(response => {
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.shoppingCart = new ShoppingCart();
@@ -157,7 +157,7 @@ export class StoreComponent implements OnInit {
         this._productService.getProductDetails(product.ReferenceUUID, product.ReferenceType).subscribe(
             response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.selectedProductDetails = response.Result;
@@ -179,7 +179,7 @@ export class StoreComponent implements OnInit {
         this._storeService.getShoppingCart(cartUUID).subscribe(response => {
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.shoppingCart = response.Result;
@@ -194,7 +194,7 @@ export class StoreComponent implements OnInit {
             .subscribe(response => {
                 this.loadingData = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.shoppingCart = response.Result;

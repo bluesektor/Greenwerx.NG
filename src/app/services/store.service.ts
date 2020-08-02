@@ -2,10 +2,8 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { map } from 'rxjs/operators';
+import { Api } from './api';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { UnitOfMeasure } from '../models/unitofmeasure';
@@ -15,22 +13,23 @@ import { ServiceResult } from '../models/serviceresult';
 import { PriceRule } from '../models/pricerule';
 
 @Injectable()
-export class StoreService extends WebApiService {
+export class StoreService  {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor( private api: Api ) {
+        
     }
 
     getShoppingCart(cartUUID: string) {
-        return this.invokeRequest('GET', 'api/Store/Cart/' + cartUUID);
+        
+        return this.api.invokeRequest('GET', 'api/Store/Cart/' + cartUUID);
     }
 
     getNewShoppingCart() {
-        return this.invokeRequest('GET', 'api/Store/NewCart');
+        return this.api.invokeRequest('GET', 'api/Store/NewCart');
     }
 
     checkOut(cart: ShoppingCart) {
-        return this.invokeRequest('POST', 'api/Store/CheckOut', JSON.stringify(cart));
+        return this.api.invokeRequest('POST', 'api/Store/CheckOut', cart);
     }
 
 
@@ -93,20 +92,20 @@ export class StoreService extends WebApiService {
     // This is different from getInvetory in that it returns published items.
     //
     getStoreInventory(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Store' + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/Store' , filter);
     }
 
     getItemsInCart(cartUUID: string ) {
-        return this.invokeRequest('GET', 'api/Store/Cart/' + cartUUID + '/Items');
+        return this.api.invokeRequest('GET', 'api/Store/Cart/' + cartUUID + '/Items');
     }
 
     addToCart(cartUUID: string , item: InventoryItem, quantity: number) {
-        return this.invokeRequest('POST', 'api/Store/Cart/' + cartUUID + '/Add/' + item.UUID + '/quantity/' + quantity);
+        return this.api.invokeRequest('POST', 'api/Store/Cart/' + cartUUID + '/Add/' + item.UUID + '/quantity/' + quantity);
     }
 
     deleteCartItem(cartUUID: string, cartItemUUID: string, itemUUID: string ) {
 
-        return this.invokeRequest('DELETE', 'api/Store/Cart/' + cartUUID + '/Item/' + cartItemUUID + '/Delete' );
+        return this.api.invokeRequest('DELETE', 'api/Store/Cart/' + cartUUID + '/Item/' + cartItemUUID + '/Delete' );
     }
 
 }

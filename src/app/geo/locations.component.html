@@ -16,7 +16,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
         </div>
         <div class="row">
-            <p-dataTable [value]="locations"
+            <h4>Locations</h4>
+            <p-table [value]="locations"
                          selectionMode="single"
                          [(selection)]="location"
                          (onRowSelect)="onRowSelect($event)"
@@ -27,17 +28,23 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [loading]="processingRequest"
                          (onLazyLoad)="lazyLoadLocationsList($event)"
                          [totalRecords]="totalLocations">
-                <p-header>Locations</p-header>
-                <p-column field="Name" header="Name" [sortable]="true"></p-column>
-                <p-footer>
+               
+             
+                <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                    <tr (click)="onRowSelect($event)">
+                        <td>{{data.Name}}</td>
+                        
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
                     <div class="ui-helper-clearfix" style="width:25%">
                         <button type="button" class="form-control input-sm" value="Add"
                                 (click)="showDialogToAdd()" label="Add">
                             <i class="fa fa-plus" style="color:green;"></i> Add
                         </button>
                     </div>
-                </p-footer>
-            </p-dataTable>
+                </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Location Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -48,12 +55,34 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group" style="z-index:9050!important;">
                         <label for="cboAccounts">Account:{{selectedAccount.Name}}</label>
-                        <p-autoComplete  [suggestions]="filteredAccounts" field="Name" 
-                            (completeMethod)="filterAccounts($event)" [size]="30"
-                            [minLength]="1" placeholder="Hint: type 'v' or 'f'" 
-                            [dropdown]="true" (onDropdownClick)="handleAccountDropdownClick($event)"
-                            (onSelect)="onSelectAccount($event)" >
+
+                        <!-- todo reimplement. stopped working for some reason.
+                        <p-autoComplete  
+                            [suggestions]="filteredAccounts" 
+                            field="Name" 
+                            (completeMethod)="filterAccounts($event)" 
+                            [size]="30"
+                            [minLength]="1"
+                             placeholder="Hint: type 'v' or 'f'" 
+                            [dropdown]="true"
+                            [(ngModel)]="selectedAccount"
+                            (onDropdownClick)="handleAccountDropdownClick($event)"
+                            (onSelect)="onSelectAccount($event)"
+                            >
                         </p-autoComplete>
+                    -->
+                        <select class="form-control input-sm" id="cboAccounts" name="cboAccounts"
+                                [(ngModel)]="selectedAccount"
+                                (ngModelChange)="handleAccountDropdownClick($event)">
+                            <option [attr.selected]="selectedAccount.UUID == ''"  value="">Select Account</option>
+                            <option *ngFor="let account of filteredAccounts;let i = index;" [attr.selected]="selectedAccount.UUID == account.UUID" value="{{account.UUID}}">
+                                {{account.Name}}
+                            </option>
+                        </select>
+                        
+                        <div *ngIf="isSuperAdmin === true"></div>
+                        <p-checkbox label="View All Accounts" [(ngModel)]="allowAllAcocunts" binary="allowAllAcocunts" 
+                        (click)="toggleViewAllAcocunts($event )"></p-checkbox>
                     </div>
 
                     <div class="form-group">
@@ -136,13 +165,14 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         </p-accordionTab>
                 </p-accordion>
                 </div>
-                <p-footer>
+                <!--                <ng-template pTemplate="footer"> -->
+
                     <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="save()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
                         <button *ngIf="!newLocation" type="button" style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="delete()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>
                     </div>
-                </p-footer>
+             <!--   </ng-template> -->
             </p-dialog>
 
         </div>

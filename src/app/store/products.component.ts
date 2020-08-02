@@ -6,13 +6,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { PlantsService } from '../services/plants.service';
-import { AccountService } from '../services/account.service';
+import { AccountService } from '../services/user/account.service';
 import { CheckboxModule } from 'primeng/primeng';
 import { PickListModule } from 'primeng/primeng';
 import {
-    ConfirmDialogModule, ConfirmationService, GrowlModule, AutoCompleteModule,
+    ConfirmDialogModule, ConfirmationService, AutoCompleteModule,
     AccordionModule, SelectItem, DropdownModule
 } from 'primeng/primeng';
 import { Filter } from '../models/filter';
@@ -25,13 +25,14 @@ import { Category } from '../models/category';
 import { Location } from '../models/location';
 import { GeoService } from '../services/geo.service';
 import { Strain } from '../models/strain';
-
+import {Api} from '../services/api';
+import { ServiceResult } from '../models';
 
 
 @Component({
     templateUrl: './products.component.html',
 
-    providers: [ProductService, ConfirmationService, SessionService, GeoService, CategoriesService, PlantsService, UnitsOfMeasureService]
+  //  providers: [ProductService, ConfirmationService, SessionService, GeoService, CategoriesService, PlantsService, UnitsOfMeasureService]
 })
 export class ProductsComponent implements OnInit {
 
@@ -52,6 +53,7 @@ export class ProductsComponent implements OnInit {
     formProductDetail: FormGroup;
     selectedStrainName: string;
     strains: Strain[] = [];
+    strainOptions: SelectItem[] = [];
     searchStrains: Filter = new Filter();
     // =======----- Manufacturer -----========
     selectedManufacturerName: string;
@@ -106,14 +108,14 @@ export class ProductsComponent implements OnInit {
 
         this.loadingData = true;
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
         this.loadCategoriesDropDown();
         this.loadDepartments();
         this.loadLocations();
-
-        this.fileUploadUrl = this._accountService.baseUrl() + 'api/File/Upload';
+        this.loadStrains();
+        this.fileUploadUrl = Api.url   + 'api/File/Upload';
     }
 
     onTabShow(e) {
@@ -125,7 +127,7 @@ export class ProductsComponent implements OnInit {
                 if (this.product.StrainUUID) {
                     this._plantsService.getStrain(this.product.StrainUUID).subscribe(response => {
                         if (response.Code !== 200) {
-                            this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                            this.msgBox.ShowMessage(response.Status, response.Message);
                             return false;
                         }
                         this.selectedStrainName = response.Result.Name;
@@ -134,7 +136,7 @@ export class ProductsComponent implements OnInit {
                 if (this.product.ManufacturerUUID) {
                     this._accountService.getAccount(this.product.ManufacturerUUID).subscribe(response => {
                         if (response.Code !== 200) {
-                            this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                            this.msgBox.ShowMessage(response.Status, response.Message);
                             return false;
                         }
                         this.selectedManufacturerName = response.Result.Name;
@@ -149,7 +151,7 @@ export class ProductsComponent implements OnInit {
 
                 this._unitsOfMeasureService.get(filter).subscribe(response => {
                     if (response.Code !== 200) {
-                        this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                        this.msgBox.ShowMessage(response.Status, response.Message);
                         return false;
                     }
                     this.unitsOfMeasure = response.Result;
@@ -166,7 +168,7 @@ export class ProductsComponent implements OnInit {
     }
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken  );
     }
 
     onImageUpload(event) {
@@ -175,8 +177,8 @@ export class ProductsComponent implements OnInit {
             this.uploadedFiles.push(file);
             currFile = file;
         }
-        this.product.Image = this._accountService.baseUrl() + 'Content/Uploads/' +
-            this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+        this.product.Image = Api.url + 'Content/Uploads/' +
+            this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
     }
 
     // ===--- Top Menu Bar ---===
@@ -194,7 +196,7 @@ export class ProductsComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -206,10 +208,10 @@ export class ProductsComponent implements OnInit {
                 this.selectedCategoryUUID = '';
             }
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -247,7 +249,7 @@ export class ProductsComponent implements OnInit {
         const res = this._categoriesService.getCategories(filter);
         res.subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -261,10 +263,10 @@ export class ProductsComponent implements OnInit {
             this.selectedDepartmentUUID = '';
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -293,17 +295,17 @@ export class ProductsComponent implements OnInit {
         const res = this._productService.getProducts(filter);
         res.subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             this.products = response.Result;
             this.totalRecords = response.TotalRecordCount;
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -319,7 +321,7 @@ export class ProductsComponent implements OnInit {
             this.loadingData = false;
             this.displayDialog = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locations = response.Result;
@@ -330,10 +332,10 @@ export class ProductsComponent implements OnInit {
             this.locations.push(l);
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -355,16 +357,16 @@ export class ProductsComponent implements OnInit {
         const res = this._productService.deleteProduct(productUUID);
 
         res.subscribe(response => {
-
+            
             this.deletingData = false;
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Product deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Product deleted.');
             const index = this.findSelectedIndex(this.product);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -374,15 +376,15 @@ export class ProductsComponent implements OnInit {
         }, err => {
             this.deletingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
-                this.msgBox.ShowMessage('error', err.status + ' Session expired.', 10);
+                this._sessionService.logOut();
+                this.msgBox.ShowMessage('error', err.status + ' Session expired.');
 
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
             } else {
 
-                this.msgBox.ShowMessage('error', err.status + ' Failed to connect. Check your connection or try again later.', 10);
+                this.msgBox.ShowMessage('error', err.status + ' Failed to connect. Check your connection or try again later.');
             }
         });
 
@@ -413,17 +415,17 @@ export class ProductsComponent implements OnInit {
         res.subscribe(response => {
             if (response.Code !== 200) {
                 this.loadingData = false;
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.loadingData = false;
             this.products = response.Result;
             this.totalRecords = response.TotalRecordCount;
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -483,26 +485,26 @@ export class ProductsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             if (this.newProduct) {
-                this.msgBox.ShowMessage('info', 'Product added.', 10);
+                this.msgBox.ShowMessage('info', 'Product added.');
                 this.product.UUID = response.Result.UUID;
                 this.newProduct = false;
                 this.products.push(this.product);
 
             } else {
-                this.msgBox.ShowMessage('info', 'Product updated.', 10);
+                this.msgBox.ShowMessage('info', 'Product updated.');
                 this.products[this.findSelectedIndex(this.product)] = this.product;
             }
             this.loadProducts(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -524,16 +526,15 @@ export class ProductsComponent implements OnInit {
         if( event.query)
          screen.Value = event.query.toLowerCase();
         this.searchStrains.Screens.push(screen);
-        this.loadStrains();
+       
     }
 
     handleStrainsDropdownClick(event) {
         this.searchStrains.Screens = [];
 
-        this.searchStrains.PageResults = true;
-        this.searchStrains.StartIndex = 1;
-        this.searchStrains.PageSize = 25;
-        this.loadStrains();
+        this.searchStrains.PageResults = false;
+   
+      
     }
 
     onSelectStrain(value) {
@@ -543,19 +544,23 @@ export class ProductsComponent implements OnInit {
 
     loadStrains() {
 
-        setTimeout(() => {
+        
             this._plantsService.getStrains(this.searchStrains).subscribe(response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.strains = response.Result;
                 this.totalRecords = response.TotalRecordCount;
+                
+                for (let i = 0; i < this.strains.length; i++) {
+                    this.strainOptions.push({ label: this.strains[i].Name, value: this.strains[i].UUID });
+                }
             }, err => {
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.logOut();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -563,7 +568,7 @@ export class ProductsComponent implements OnInit {
 
             });
 
-        }, 1000);
+      
     }
 
     // =======----- Manufacturer -----========
@@ -608,7 +613,7 @@ export class ProductsComponent implements OnInit {
                 this.loadingData = false;
                 if (response.Code !== 200) {
 
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.filteredAccounts = response.Result;

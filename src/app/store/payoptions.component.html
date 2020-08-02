@@ -8,8 +8,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
         <div class="row">
         </div>
         <div class="row">
-
-            <p-dataTable [value]="listData"
+            <h4>Accounts</h4>
+            <p-table [value]="listData"
                          [totalRecords]="listCount"
                          selectionMode="single"
                          [(selection)]="selectedItem"
@@ -19,18 +19,31 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [responsive]="true"
                          [lazy]="true"
                          (onLazyLoad)="lazyLoadFinanceAccountList($event)">
-                <p-header>Accounts</p-header>
-                <p-column field="Name" header="Name" [sortable]="false">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                        <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="Active" header="Active" [sortable]="false"></p-column>
-                <p-footer>
+               
+                         <ng-template pTemplate="header">
+                            <tr>
+                                <th  >
+                                    Name
+                                </th>
+                                <th  >Active</th>
+                            </tr>
+                         </ng-template>
+              
 
-                </p-footer>
-            </p-dataTable>
+                         <ng-template pTemplate="body" let-item>
+							<tr>
+                                <td  >
+                                        <img src="{{baseUrl}}{{item.Image}}" style="height:32px;" (click)="onRowSelect(item)" />
+                                        <label (click)="onRowSelect(item)">{{item.Name}}</label>
+                                </td>
+                                <td  >{{item.Active}}</td>
+							</tr>
+						</ng-template>
+              
+
+                <ng-template pTemplate="footer">
+                </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Account Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -40,12 +53,15 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         <input pInputText id="Name" [(ngModel)]="selectedItem.Name" class="input-sm form-control" />
                     </div>
                     <div class="form-group">
-
+    <!--
                         <img src="{{baseUrl}}{{selectedItem.Image}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
+                
                         <p-fileUpload *ngIf="editImage" name="uploadedFiles[]" url="{{fileUploadUrl}}{{selectedItem.UUID}}/{{selectedItem.UUIDType}}"
                                       id="{{selectedItem.UUID}}"
                                       (onBeforeSend)="onBeforeSendFile($event)"
-                                      (onUpload)="onImageUpload($event,selectedItem.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
+                                      (onUpload)="onImageUpload($event,selectedItem.UUID)" accept="image/*" maxFileSize="1000000">
+                                    </p-fileUpload>
+                                -->
                     </div>
                     <div class="form-group">
                         <p-checkbox [(ngModel)]="selectedItem.Active" label="Active" binary="selectedItem.Active"></p-checkbox>

@@ -9,13 +9,12 @@ import { Message } from './models/message';
 @Component({
 
     templateUrl: './contact-form.component.html',
-    providers: [AppService]
 })
 
 export class ContactFormComponent {
     form: FormGroup;
     sendingMessage = false;
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
+    
     SentFrom: string;
     Subject: string;
     Comment: string;
@@ -23,7 +22,8 @@ export class ContactFormComponent {
 
     constructor(
         @Inject(FormBuilder) fb: FormBuilder,
-        private _appService: AppService
+        private _appService: AppService,
+        private msgBox:MessageBoxesComponent
 
     ) {
 
@@ -46,17 +46,17 @@ export class ContactFormComponent {
                 this.sendingMessage = false;
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
 
                 this.form.reset();
                 this.form.markAsPristine();
-                this.msgBox.ShowMessage('info', 'Your email has been sent. Thank you.', 10   );
+                this.msgBox.ShowMessage('info', 'Your email has been sent. Thank you.');
             },
             err => {
                 this.sendingMessage = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
 
         });

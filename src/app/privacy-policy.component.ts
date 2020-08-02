@@ -8,7 +8,6 @@ import { AppService } from './services/app.service';
     <h2>{{pageSettings.appName}}</h2>
     {{pageSettings.privacyPolicy}}
 `,
-    providers: [AppService]
 })
 
 export class PrivacyPolicyComponent {
@@ -16,6 +15,6 @@ export class PrivacyPolicyComponent {
 
     constructor(private _appService: AppService) {
 
-        this.pageSettings = this._appService.getDashboard('privacy', '');
+        this.pageSettings = this._appService.getDashboard('privacy');
     }
 }

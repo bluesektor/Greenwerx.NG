@@ -2,36 +2,40 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { UnitOfMeasure } from '../models/unitofmeasure';
 
 
 @Injectable()
-export class UnitsOfMeasureService extends WebApiService {
+export class UnitsOfMeasureService  {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    public  unitsOfMeasure: UnitOfMeasure[] = [];
+
+    constructor(private api:Api) {
+     
     }
 
     add(uom: UnitOfMeasure) {
-        return this.invokeRequest('POST', 'api/UnitsOfMeasure/Add', JSON.stringify(uom));
+        return this.api.invokeRequest('POST', 'api/UnitsOfMeasure/Add', uom);
     }
 
 
     delete(uuid) {
-        return this.invokeRequest('DELETE', 'api/UnitsOfMeasure/Delete/' + uuid, ''    );
+        return this.api.invokeRequest('DELETE', 'api/UnitsOfMeasure/Delete/' + uuid, ''    );
     }
 
     get(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/UnitsOfMeasure/?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/UnitsOfMeasure',filter);
+    }
+
+    getByUUID(uuid: string){
+        return this.api.invokeRequest('GET', 'api/UnitsOfMeasureBy/' + uuid);
     }
 
     update(uom: UnitOfMeasure) {
-        return this.invokeRequest('PATCH', 'api/UnitsOfMeasure/Update', JSON.stringify( uom ));
+        return this.api.invokeRequest('PATCH', 'api/UnitsOfMeasure/Update',  uom );
     }
 }

@@ -6,24 +6,24 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
-import { CheckboxModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
 
-import { DataTableModule, SharedModule, DialogModule, DataGridModule, StepsModule,
-         AutoCompleteModule, AccordionModule} from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, PanelModule,
-         InputSwitchModule, FileUploadModule, DropdownModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, StepsModule, //TableModule
+         AutoCompleteModule, AccordionModule} from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, PanelModule,
+         InputSwitchModule, FileUploadModule, DropdownModule } from 'primeng';
 
 import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.service';
+import { SessionService } from '../services/user/session.service';
 
 import { CategoriesModule } from '../common/categories.module';
-
-import { SessionService } from '../services/session.service';
-
-import { InventoryModule } from '../inventory/inventory.module';
-
+import { InventoryModule } from '../inventory/inventory.module';  
+import { ProductService } from '../services/product.service';
+import { ProductsComponent } from './products.component';
+import { MessageBoxesModule } from '../common/messageboxes.module';
+import { StoreRoutingModule } from './store.routing';
+   
 import { StoreInventoryComponent } from '../store/storeinventory.component';
 import { StoreComponent } from '../store/store.component';
 import { DepartmentsComponent} from './departments.component';
@@ -32,48 +32,44 @@ import { CartDetailComponent } from './cartdetail.component';
 import { CheckOutComponent } from './checkout.component';
 import { OrdersComponent } from './orders.component';
 
-import { ProductsComponent } from './products.component';
-
-import { ProductService } from '../services/product.service';
 
 import { PayOptionsComponent } from './payoptions.component';
 import { FinanceModule } from '../finance/finance.module';
 import { AddressComponent } from './address.component';
 
-import { StoreRoutingModule } from './store.routing';
-import { MessageBoxesModule } from '../common/messageboxes.module';
-import {VendorsExComponent} from './vendors.component';
 
+import {VendorsExComponent} from './vendors.component';
+ 
 @NgModule({
     imports: [
         CommonModule,
-        CategoriesModule,
+         CategoriesModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
         CheckboxModule,
-        DataTableModule,
+         TableModule,
         SharedModule,
         DialogModule,
         RouterModule,
-        InventoryModule,
-        DataGridModule,
+       InventoryModule,
+         TableModule,
         PanelModule,
         StepsModule,
         InputSwitchModule,
         FileUploadModule,
-        FinanceModule,
+      FinanceModule,
         AutoCompleteModule,
         AccordionModule,
         DropdownModule,
-        StoreRoutingModule,
+       StoreRoutingModule,
         MessageBoxesModule
 
     ]
     ,
     declarations: [
-        DepartmentsComponent,
         ProductsComponent,
+        DepartmentsComponent,
+      
         StoreInventoryComponent,
         StoreComponent,
         StoreCategoriesComponent,
@@ -83,10 +79,12 @@ import {VendorsExComponent} from './vendors.component';
         AddressComponent,
         OrdersComponent,
         VendorsExComponent
+        
     ],
     exports: [
-        DepartmentsComponent,
         ProductsComponent,
+             DepartmentsComponent,
+       
         StoreInventoryComponent,
         StoreComponent,
         StoreCategoriesComponent,
@@ -96,14 +94,8 @@ import {VendorsExComponent} from './vendors.component';
         AddressComponent,
         OrdersComponent,
         VendorsExComponent
+        
     ],
-    providers: [
-        ProductService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService,
-        ConfirmationService
-    ]
 })
 export class StoreModule {
 

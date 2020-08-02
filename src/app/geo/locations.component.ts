@@ -4,11 +4,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { AccountService } from '../services/account.service';
-import { SessionService } from '../services/session.service';
+import { AccountService } from '../services/user/account.service';
+import { SessionService } from '../services/user/session.service';
 import { GeoService } from '../services/geo.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { Account } from '../models/account';
@@ -17,11 +17,12 @@ import { BasicValidators } from '../common/basicValidators';
 
 @Component({
     templateUrl: './locations.component.html',
-    providers: [GeoService, SessionService, AccountService]
 
 })
 export class LocationsComponent implements OnInit {
 
+    isSuperAdmin = false;
+    allowAllAcocunts = false;
     displayDialog = false;
     newLocation = false;
     processingRequest = false;
@@ -40,22 +41,26 @@ export class LocationsComponent implements OnInit {
     states: Location[];
     cities: Location[];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+   
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _accountService: AccountService,
         private _geoService: GeoService,
-        private _sessionService: SessionService) {
-        this.msgBox = new MessageBoxesComponent();
+        private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent) {
+    
+        if (   this._sessionService.CurrentSession.Profile.User.RoleWeight >= 99){
+            this.isSuperAdmin = true;}
     }
 
     ngOnInit() {
         this.loadLocationTypes();
+        this.loadMemberAccounts();
     }
 
     cboLocationTypeChange(newType) {
+        console.log('locations.component.ts ');
         if (!newType || newType === '' || newType === null) {
             return;
         }
@@ -65,6 +70,7 @@ export class LocationsComponent implements OnInit {
 
     cboLocationAddEditLocationTypeChange(newType) {
 
+        console.log('locations.component.ts ');
         this.customLocation = '';
         if (newType === '') {
             return;
@@ -72,25 +78,87 @@ export class LocationsComponent implements OnInit {
         this.location.LocationType = newType;
     }
 
+    toggleViewAllAcocunts(event){
+        console.log('locations.component.ts  toggleViewAllAcocunts allowAllAcocunts:', this.allowAllAcocunts);
+        if(this.allowAllAcocunts && this._accountService.Accounts.length > 0 ){
+            this.filteredAccounts = this._accountService.Accounts;
+        }else{
+            const filter = new Filter();
+            filter.PageResults = false;
+            this._accountService.getAllAccounts(filter).subscribe(response => {
+                this.processingRequest = false;
+                if (response.Code !== 200) {
+                    this.msgBox.ShowMessage(response.Status, response.Message);
+                    return false;
+                }
+                this._accountService.Accounts  = response.Result;
+                this.filteredAccounts = response.Result;
+                console.log('locations.component.ts  loadMemberAccounts filteredAccounts:', this.filteredAccounts);
+            }, err => {
+                this.processingRequest = false;
+                this.msgBox.ShowResponseMessage(err.status);
+    
+                if (err.status === 401) {
+                    this._sessionService.clearSession();
+                    setTimeout(() => {
+                        this._router.navigate(['/membership/login'], { relativeTo: this._route });
+                    }, 3000);
+                }
+            });
+        }
+
+    }
+    //Only assign a location to the accounts the user is amember of
+    // don't wan't to let someoneassing a location so some arbitrary account.
+     //if site admin allow all accounts. 
+        // todo show checkbox if site admin
+        //api/Accounts
+           // 
+    loadMemberAccounts() {
+  
+        const filter = new Filter();
+        filter.PageResults = false;
+        this._accountService.getAccounts(filter).subscribe(response => {
+            console.log('locations.component.ts  loadMemberAccounts response:', response);
+            this.processingRequest = false;
+            if (response.Code !== 200) {
+                this.msgBox.ShowMessage(response.Status, response.Message);
+                return false;
+            }
+            this.filteredAccounts = response.Result;
+            console.log('locations.component.ts  loadMemberAccounts filteredAccounts:', this.filteredAccounts);
+        }, err => {
+            this.processingRequest = false;
+            this.msgBox.ShowResponseMessage(err.status);
+
+            if (err.status === 401) {
+                this._sessionService.clearSession();
+                setTimeout(() => {
+                    this._router.navigate(['/membership/login'], { relativeTo: this._route });
+                }, 3000);
+            }
+        });
+    }
 
     loadLocationTypes() {
+        console.log('locations.component.ts loadLocationTypes');
         this.processingRequest = true;
         const res = this._geoService.getLocationTypes();
         res.subscribe(response => {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locationTypes = response.Result;
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -100,7 +168,7 @@ export class LocationsComponent implements OnInit {
     }
 
     loadLocations(locationType: string, page: number, pageSize: number) {
-
+        console.log('locations.component.ts loadLocations');
         this.processingRequest = true;
 
         const filter = new Filter();
@@ -118,7 +186,7 @@ export class LocationsComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locations = response.Result;
@@ -126,10 +194,10 @@ export class LocationsComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -139,6 +207,7 @@ export class LocationsComponent implements OnInit {
     }
 
     lazyLoadLocationsList(event) {
+        console.log('locations.component.ts lazyLoadLocationsList');
 
         if (!this.selectedLocationType || this.selectedLocationType === '') {
             return;
@@ -148,6 +217,7 @@ export class LocationsComponent implements OnInit {
     }
 
     delete() {
+        console.log('locations.component.ts delete');
         this.msgBox.closeMessageBox();
         if (confirm('Are you sure you want to delete ' + this.location.Name + '?')) {
             this.processingRequest = true;
@@ -156,21 +226,21 @@ export class LocationsComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const index = this.findLocationIndex(this.location.UUID);
                 // Here, with the splice method, we remove 1 object
                 // at the given index.
                 this.locations.splice(index, 1);
-                this.msgBox.ShowMessage('info', 'Location deleted.', 10);
+                this.msgBox.ShowMessage('info', 'Location deleted.');
                 this.loadLocations(this.selectedLocationType, 1, 25);   // not updating the list so reload for now.
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -188,13 +258,14 @@ export class LocationsComponent implements OnInit {
     }
 
     save() {
+        console.log('locations.component.ts save');
         this.msgBox.closeMessageBox();
 
         if (this.location.LocationType === 'custom') {
             this.locationTypes.push(this.customLocation);
             this.location.LocationType = this.customLocation;
 
-            this.location.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+            this.location.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
 
             if (this.location.City !== '') {
                 this.location.UUParentID = this.location.City;
@@ -230,15 +301,15 @@ export class LocationsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newLocation) {// add
-                this.msgBox.ShowMessage('info', 'Location added', 10);
+                this.msgBox.ShowMessage('info', 'Location added.');
                 this.locations.push(this.location);
             } else { // update
-                this.msgBox.ShowMessage('info', 'Location updated', 10);
+                this.msgBox.ShowMessage('info', 'Location updated.');
                 this.locations[this.findSelectedLocationIndex()] = this.location;
             }
             this.loadLocations(this.selectedLocationType, 1, 25);   // not updating the list so reload for now.
@@ -246,10 +317,10 @@ export class LocationsComponent implements OnInit {
             this.location = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -263,12 +334,13 @@ export class LocationsComponent implements OnInit {
     }
 
     onRowSelect(event) {
+        console.log('locations.component.ts onRowSelect');
         this.loadCountries();
         this.newLocation = false;
         this.location = this.cloneLocation(event.data);
         this._accountService.getAccount(this.location.AccountReference).subscribe(response => {
           //  if (response.Code !== 200) {
-          //      this.msgBox.ShowMessage(response.Status, response.Message, 15);
+          //      this.msgBox.ShowMessage(response.Status, response.Message);
           //      return false;
           //  }
           if(response.Code === 200){
@@ -295,6 +367,7 @@ export class LocationsComponent implements OnInit {
     }
 
     loadCountries() {
+        console.log('locations.component.ts loadCountries');
 
         this.processingRequest = true;
         const filter = new Filter();
@@ -305,16 +378,16 @@ export class LocationsComponent implements OnInit {
         res.subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.countries = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -323,6 +396,7 @@ export class LocationsComponent implements OnInit {
     }
 
     findLocationIndex(locationUUID): number {
+        console.log('locations.component.ts findLocationIndex');
 
         for (let i = 0; i < this.locations.length; i++) {
 
@@ -335,6 +409,7 @@ export class LocationsComponent implements OnInit {
 
 
     loadStates(countryUUID) {
+        console.log('locations.component.ts loadStates');
 
         const filter = new Filter();
         filter.PageResults = false;
@@ -343,16 +418,16 @@ export class LocationsComponent implements OnInit {
         res.subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.states = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -362,6 +437,7 @@ export class LocationsComponent implements OnInit {
     }
 
     loadCities(stateUUID) {
+        console.log('locations.component.ts loadCities');
         this.processingRequest = true;
         const filter = new Filter();
         filter.PageResults = false;
@@ -369,16 +445,16 @@ export class LocationsComponent implements OnInit {
         res.subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.cities = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -393,7 +469,7 @@ export class LocationsComponent implements OnInit {
         if ( this.loadingAccounts === true) {
             return;
         }
-
+/*
         this.loadingAccounts = true;
         const filter = new Filter();
         filter.PageResults = true;
@@ -412,18 +488,20 @@ export class LocationsComponent implements OnInit {
 
         this._accountService.getAllAccounts(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.filteredAccounts = response.Result;
             this.loadingAccounts = false;
         });
+        */
     }
 
     onSelectAccount(value) {
+        console.log('locations.component.ts onSelectAccount');
         this._accountService.getAccount(value.UUID).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.location.AccountReference = value.UUID;
@@ -436,23 +514,27 @@ export class LocationsComponent implements OnInit {
     }
 
     handleAccountDropdownClick(event) {
+        console.log('locations.component.ts handleAccountDropdownClick event:',event);
         if ( this.loadingAccounts === true) {
             return;
         }
+        /*
         this.loadingAccounts = true;
         const filter = new Filter();
         filter.PageResults = true;
         filter.StartIndex = 1;
         filter.PageSize = 25;
 
+        // only get accounts the user is a member of, unless they'r admin
         this._accountService.getAllAccounts(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.filteredAccounts = response.Result;
             this.loadingAccounts = false;
         });
+        */
     }
 
 

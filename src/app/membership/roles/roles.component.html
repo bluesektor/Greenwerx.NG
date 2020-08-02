@@ -14,18 +14,19 @@
                     </select>
                 </div>
             <div class="cell-block">
-                    <button (click)="onClickAddNewRole()"  class="form-control input-sm" value="New Role">
+                    <button (click)="onClickAddNewRole($event)"  class="form-control input-sm" value="New Role">
                         <i class="fa fa-plus icon-large" style="color:green;"></i>
                     </button>
                   
                 </div>
             <div class="cell-block">
                 
-                <button pbutton="" type="button"  class="form-control input-sm" value="Delete Role"  (click)="onClickDeleteRoleDetail()"  
+                <button pbutton="" type="button"  class="form-control input-sm" value="Delete Role"  (click)="onClickDeleteRoleDetail($event)"  
                          [disabled]='roleDetail.UUID == activeRole?.UUID'               >
                     <i class="fa fa-trash"  style="color:red;"></i></button>
                 <p-confirmDialog width="425"></p-confirmDialog>
-                <p-growl [value]="msgs"></p-growl>
+                <div>{{msgs}}</div>
+               <!-- <p-growl [value]="msgs"></p-growl>-->
             </div>
             <div *ngIf="deletingData" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
             <br/>
@@ -85,11 +86,11 @@
                        <!--<input type="text" [ngModel]="mymodel" (ngModelChange)="valuechange($event)" />-->
                        <div class="cell-block"><input type="text" class="form-control"  id="txtAvailablePermissionsFilter" 
                                                        (ngModelChange)="filterAvailableChanged($event)"
-                                                       [(ngModel)]="filterAvailablePermissions.SearchTerm" /> </div>
+                                                       [(ngModel)]="SearchTerm" /> </div>
                        
                        <div class="cell-block" style="float:right;" ><input type="text" class="form-control" id="txtSelectedPermissionsFilter" 
                                                                              (ngModelChange)="filterSelectedChanged($event)"
-                                                                              [(ngModel)]="filterSelectedPermissions.SearchTerm" 
+                                                                              [(ngModel)]="SearchTerm" 
                                                                              /> </div>
 
                            <div *ngIf="loadingData" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>

@@ -4,15 +4,15 @@
 import { Component, OnInit, ViewChild , Output, EventEmitter, ElementRef} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AccordionModule, CheckboxModule, PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, AutoCompleteModule } from 'primeng/primeng';
+import { AccordionModule, CheckboxModule, PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, AutoCompleteModule } from 'primeng';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
 import { GraphsComponent } from '../../common/graphs.component';
 import { BasicValidators } from '../../common/basicValidators';
 import { AppService } from '../../services/app.service';
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { ReportService } from '../../services/report.service';
-import { ApiKey } from '../../models/ApiKey';
+import { ApiKey } from '../../models/apikey';
 import { Filter } from '../../models/filter';
 import { Screen } from '../../models/screen';
 import { DataPoint } from '../../models/datapoint';
@@ -21,7 +21,7 @@ import { ServiceResult } from '../../models/serviceresult';
 
 @Component({
     templateUrl: './keys.component.html',
-    providers: [ReportService, ConfirmationService, SessionService,   AppService]
+   
 })
 export class KeysComponent implements OnInit {
 
@@ -37,22 +37,23 @@ export class KeysComponent implements OnInit {
     displayDialog = false;
     newApiKey = false;
     showUsage = false;
+    Active = false;
     dataSet: DataPoint[] = [];
     @ViewChild(GraphsComponent) graphs: GraphsComponent;
 
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+    
     constructor( fb: FormBuilder,
         private _router: Router,
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _sessionService: SessionService,
-        private _reportService: ReportService ) {
+        private _reportService: ReportService
+        ,private msgBox : MessageBoxesComponent ) {
 
 
 
-        if (this._sessionService.CurrentSession.validSession) {
+        if (this._sessionService.CurrentSession.ValidSession) {
 
             this.form = fb.group({
                 name: ['', Validators.required],
@@ -67,7 +68,7 @@ export class KeysComponent implements OnInit {
                 password: ['', Validators.compose([
                     Validators.required
                 ])],
-                confirmPassword: ['', Validators.required],
+                ConfirmPassword: ['', Validators.required],
                 PasswordQuestion: ['', Validators.required],
                 PasswordAnswer: ['', Validators.required],
 
@@ -76,7 +77,7 @@ export class KeysComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             this._router.navigate(['/membership/login'], { relativeTo: this._route });
             return;
         }
@@ -110,11 +111,11 @@ export class KeysComponent implements OnInit {
             this.showUsage = false;
 let data = response as ServiceResult;
             if (data.Code !== 200) {
-                this.msgBox.ShowMessage(data.Status, data.Message, 10);
+                this.msgBox.ShowMessage(data.Status, data.Message);
                 return false;
             }
             if (data.Result.length === 0) {
-                this.msgBox.ShowMessage('info', 'Key usage results returned.', 10);
+                this.msgBox.ShowMessage('info', 'Key usage results returned.');
                 return false;
             }
             this.showUsage = true;
@@ -133,10 +134,10 @@ let data = response as ServiceResult;
             this.graphs.graph(graphData);
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -205,16 +206,16 @@ let data = response as ServiceResult;
             this.loadingData = false;
             let data = response as ServiceResult;
             if (data.Code !== 200) {
-                this.msgBox.ShowMessage(data.Status, data.Message, 10);
+                this.msgBox.ShowMessage(data.Status, data.Message);
                 return false;
             }
             this.apiKeys = data.Result;
             this.totalRecords = data.TotalRecordCount;
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -248,26 +249,26 @@ let data = response as ServiceResult;
             this.displayDialog = false;
 let data = response as ServiceResult;
             if (data.Code !== 200) {
-                this.msgBox.ShowMessage(data.Status, data.Message, 10);
+                this.msgBox.ShowMessage(data.Status, data.Message);
                 return false;
             }
             if (this.newApiKey) {
-                this.msgBox.ShowMessage('info', 'Key added.', 10);
+                this.msgBox.ShowMessage('info', 'Key added.');
                 this.selectedApiKey.UUID = data.Result.UUID;
                 this.newApiKey = false;
                 this.apiKeys.push(this.selectedApiKey);
 
             } else {
-                this.msgBox.ShowMessage('info', 'Key updated.', 10);
+                this.msgBox.ShowMessage('info', 'Key updated.');
                 this.apiKeys[this.findSelectedIndex(this.selectedApiKey)] = this.selectedApiKey;
             }
             this.loadApiKeys(  1, 25);  // not updating the list so reload for now.
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -294,11 +295,11 @@ let data = response as ServiceResult;
             this.displayDialog = false;
 let data = response as ServiceResult;
             if (data.Code !== 200) {
-                this.msgBox.ShowMessage(data.Status, data.Message, 10);
+                this.msgBox.ShowMessage(data.Status, data.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Key deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Key deleted.');
             const index = this.findSelectedIndex(this.selectedApiKey);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -307,10 +308,10 @@ let data = response as ServiceResult;
 
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -367,12 +368,12 @@ let data = response as ServiceResult;
             this.loadingData = false;
             let data = response as ServiceResult;
             if (data.Code !== 200) {
-                this.msgBox.ShowMessage(data.Status, data.Message, 10);
+                this.msgBox.ShowMessage(data.Status, data.Message);
                 return false;
             }
 
             if (data.Result.length === 0) {
-                this.msgBox.ShowMessage('info', 'Key usage results returned.', 10);
+                this.msgBox.ShowMessage('info', 'Key usage results returned.');
                 return false;
             }
             this.showUsage = true;
@@ -390,10 +391,10 @@ let data = response as ServiceResult;
             this.graphs.graph(graphData);
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

@@ -5,17 +5,16 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
-import { CheckboxModule } from 'primeng/primeng';
 
-import { DataTableModule, SharedModule, DialogModule, DataGridModule, StepsModule, AutoCompleteModule} from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, PanelModule, InputSwitchModule, FileUploadModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
+
+import { TableModule, SharedModule, DialogModule,  StepsModule, AutoCompleteModule} from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, PanelModule, InputSwitchModule, FileUploadModule } from 'primeng';
 import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.service';
 
-import { CommontmModule } from '../common/commontm.module';
-import { SessionService } from '../services/session.service';
+import { CommonModuleEx} from '../common/common.moduleex';
+import { SessionService } from '../services/user/session.service';
 import { StrainsComponent } from './strains.component';
 
 import { PlantsService } from '../services/plants.service';
@@ -30,14 +29,12 @@ import { MessageBoxesModule } from '../common/messageboxes.module';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule,
+        CommonModuleEx,
         CheckboxModule,
-        DataTableModule,
+        TableModule,
         SharedModule,
         DialogModule,
         RouterModule,
-        DataGridModule,
         PanelModule,
         StepsModule,
         InputSwitchModule,
@@ -55,13 +52,6 @@ import { MessageBoxesModule } from '../common/messageboxes.module';
     exports: [
         StrainsComponent
     ],
-    providers: [
-        PlantsService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService,
-        ConfirmationService
-    ]
 })
 export class PlantsModule {
 

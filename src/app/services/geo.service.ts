@@ -2,46 +2,44 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 
 @Injectable()
-export class GeoService extends WebApiService {
+export class GeoService     {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor(private api:Api) {
+      
     }
 
     addLocation(location) {
-        return this.invokeRequest('POST', 'api/Locations/Add', JSON.stringify(location));
+        return this.api.invokeRequest('POST', 'api/Locations/Add', location);
     }
     getLocationTypes() {
-        return this.invokeRequest('GET', 'api/Locations/LocationTypes', ''    );
+        return this.api.invokeRequest('GET', 'api/Locations/LocationTypes', ''    );
     }
 
     getCustomLocations() {
-        return this.invokeRequest('GET', 'api/Locations/Custom');
+        return this.api.invokeRequest('GET', 'api/Locations/Custom');
     }
 
 
     getLocations(locationType: string, filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Locations/LocationType/' + locationType + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('POST', 'api/Locations/LocationType/' + locationType ,filter);
     }
 
     deleteLocation(settingUUID) {
-        return this.invokeRequest('DELETE', 'api/Locations/Delete/' + settingUUID, ''    );
+        return this.api.invokeRequest('DELETE', 'api/Locations/Delete/' + settingUUID, ''    );
     }
 
     updateLocation(location) {
-        return this.invokeRequest('PATCH', 'api/Locations/Update', JSON.stringify(location));
+        return this.api.invokeRequest('PATCH', 'api/Locations/Update', location);
     }
 
 
     getChildLocations(parentUUID: string ,  filter?: Filter) {
-        return this.invokeRequest('GET', 'api/ChildLocations/' + parentUUID + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('POST', 'api/ChildLocations/' + parentUUID ,filter);
     }
 }

@@ -4,7 +4,7 @@
 import { Component, OnInit, ViewChild, Input, Output, Inject, EventEmitter } from '@angular/core';
 import { FormsModule, FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { AppService } from '../services/app.service';
 import { Address } from '../models/address';
@@ -41,7 +41,6 @@ export class AddressComponent implements OnInit {
         private _sessionService: SessionService,
         @Inject(FormBuilder) fb: FormBuilder
         ) {
-        this.msgBox = new MessageBoxesComponent();
         this.addressFormGroup.addControl('AddressContactName', new FormControl('', [this.ValidateEx.bind(this, [ 'AddressContactName'])]));
         this.addressFormGroup.addControl('AddressStreetAddress1', new FormControl('', [this.ValidateEx.bind(this, ['AddressStreetAddress1'] )]));
         this.addressFormGroup.addControl('AddressCountry', new FormControl('', [this.ValidateEx.bind(this, [ 'AddressCountry'])]));

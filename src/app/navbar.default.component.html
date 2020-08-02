@@ -25,14 +25,15 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             </a>
             <ul *ngIf="userIsLoggedIn === true" class="dropdown-menu dropdown-user">
                 <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-user fa-fw"></i> Profile</a></li>
+              <!--  <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-user fa-fw"></i> Orders</a></li>-->
                 <li *ngIf="userIsAdmin === true" id="mnuAdminItem"><a href="/Admin"><i class="fa fa-gear fa-fw"></i> Admin</a></li>
                 <li class="divider"></li>
                 <li><a routerLink="/membership/login" routerLinkActive="active"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
             </ul>
-            <ul *ngIf="userIsLoggedIn === false" class="dropdown-menu dropdown-user">
+            <ul  *ngIf="userIsLoggedIn === false"  class="dropdown-menu dropdown-user" > 
                 <li><a routerLink="/membership/login" routerLinkActive="active"><i class="fa fa-sign-out fa-fw"></i>Log in</a></li>
                 <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-pencil-square-o fa-fw"></i>Register</a></li>
-                <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-user fa-fw"></i> Orders</a></li>
+               
             </ul>
             <!-- /.dropdown-user -->
         </li>

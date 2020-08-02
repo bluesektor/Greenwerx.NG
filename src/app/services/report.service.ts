@@ -2,10 +2,8 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import {  Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { DataPoint } from '../models/datapoint';
@@ -18,16 +16,16 @@ interface Dictionary<T> {
 }
 
 @Injectable()
-export class ReportService extends WebApiService {
+export class ReportService  {
 
     calcResults: Dictionary<number> = {};
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor(private api: Api) {
+        
     }
 
     getDataset(category: string, field: string, searchFilter: Filter) {
-        return this.invokeRequest('GET', 'api/Reports/' + category + '/Dataset/' + field + '/?filter=' + JSON.stringify(searchFilter));
+        return this.api.invokeRequest('GET', 'api/Reports/' + category + '/Dataset/' + field ,searchFilter);
     }
 
     // Use compile when data needs to be converted to the

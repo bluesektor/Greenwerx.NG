@@ -8,19 +8,18 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
 
 import { AccountComponent } from './account.component';
 import { AccountsComponent } from './accounts.component';
-import { AccountService } from '../../services/account.service';
+import { AccountService } from '../../services/user/account.service';
 import { PreventUnsavedChangesGuard } from '../../prevent-unsaved-changes-guard.service';
-import { CommontmModule  } from '../../common/commontm.module';
+import { CommonModuleEx  } from '../../common/common.moduleex';
 import { MessageBoxesModule } from '../../common/messageboxes.module';
-import { SessionService } from '../../services/session.service';
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { SessionService } from '../../services/user/session.service';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 import { AccountsRoutingModule} from './accounts.routing';
 
 @NgModule({
@@ -28,14 +27,12 @@ import { AccountsRoutingModule} from './accounts.routing';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule ,
+        CommonModuleEx ,
         RouterModule,
         AccordionModule,
         CheckboxModule,
         PickListModule,
         ConfirmDialogModule,
-        GrowlModule,
         AccountsRoutingModule,
         MessageBoxesModule
 
@@ -50,12 +47,7 @@ import { AccountsRoutingModule} from './accounts.routing';
         AccountsComponent,
         AccountComponent
     ]   ,
-    providers: [
-        AccountService,
-        PreventUnsavedChangesGuard,
-        SessionService,
-        ConfirmationService
-    ]
+  
 })
 export class AccountsModule {
 

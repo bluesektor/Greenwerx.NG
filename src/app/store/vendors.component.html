@@ -4,22 +4,32 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 -->
 <br />
 <app-messageboxes></app-messageboxes>
-
-<p-dataTable [value]="vendors"
+<h4>Vendors</h4>
+<p-table [value]="vendors"
              selectionMode="single"
              [(selection)]="vendor"
              (onRowSelect)="onRowSelect($event)" [paginator]="true" rows="15" [responsive]="true">
-    <p-header>Vendors</p-header>
-    <p-column field="Name" header="Name" [sortable]="true"></p-column>
-    <p-footer>
+    
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Vendors</th>
+        </tr>
+     </ng-template>
+  
+    <ng-template pTemplate="body" let-item>
+        <tr>
+            <td>{{item.Name}}</td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="footer">
         <div class="ui-helper-clearfix" style="width:25%">
             <button type="button" class="form-control input-sm" value="Add"
                     (click)="showDialogToAdd()" label="Add">
                 <i class="fa fa-plus" style="color:green;"></i> Add
             </button>
         </div>
-    </p-footer>
-</p-dataTable>
+    </ng-template>
+</p-table>
 
 <!--Dialog for  crud actions 
 <p-dialog header="Vendor Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">

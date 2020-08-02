@@ -3,17 +3,18 @@
 
 import { Component } from '@angular/core';
 import { AppService } from './services/app.service';
-
+import { MessageBoxesComponent} from '../app/common/messageboxes.component';
+import {SessionService} from './services/user/session.service';
 @Component({
-    template: `<h1>Home</h1>`
+  selector: 'page-home',
+  templateUrl: './home.component.html',
 })
 export class HomeComponent {
 
-    baseUrl: string;
-    // <router-outlet></router-outlet>
-
-    constructor( private _appService: AppService ) {
-        this.baseUrl = this._appService.BaseUrl();
+    constructor( private _appService: AppService ,
+      private _sessionService: SessionService,
+      private msgBox:MessageBoxesComponent) {
+        console.log('home.component.ts constructor session:', this._sessionService.CurrentSession);
     }
-
+  
 }

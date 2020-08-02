@@ -3,20 +3,21 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CheckboxModule, FileUploadModule, SelectItem, DropdownModule, InputSwitchModule } from 'primeng/primeng';
+import { CheckboxModule, FileUploadModule, SelectItem, DropdownModule, InputSwitchModule } from 'primeng';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { Currency } from '../models/currency';
 import { FinanceService } from '../services/finance.service';
 import { AppService } from '../services/app.service';
 import { Node } from '../models/node';
+import {Api} from '../services/api';
 @Component({
     templateUrl: './currency.component.html',
-    providers: [SessionService, FinanceService, AppService]
+ 
 
 })
 export class CurrencyComponent implements OnInit {
@@ -37,21 +38,20 @@ export class CurrencyComponent implements OnInit {
     assetClassOptions: SelectItem[] = [];
     uploadedFiles: any[] = [];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
 
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _sessionService: SessionService,
-        private _currencyService: FinanceService) {
-        this.msgBox = new MessageBoxesComponent();
+        private _currencyService: FinanceService
+        ,private msgBox : MessageBoxesComponent) {
     }
 
     ngOnInit() {
 
-        this.baseUrl = this._appService.BaseUrl();
-        this.fileUploadUrl = this._appService.BaseUrl() + 'api/File/Upload/';
+        this.baseUrl = Api.url;
+        this.fileUploadUrl =  Api.url + 'api/File/Upload/';
         this.currency.Image = '/Content/Default/Images/add.png';
         this.loadCurrencySymbols();
         this.loadAssetClasses();
@@ -94,7 +94,7 @@ export class CurrencyComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.listData = response.Result;
@@ -102,10 +102,10 @@ export class CurrencyComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -154,7 +154,7 @@ export class CurrencyComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const index = this.getItemIndex(this.currency.UUID); 
@@ -162,13 +162,13 @@ export class CurrencyComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1);
                 this.loadCurrencies(1, 25); // not updating the list so reload for now.
-                this.msgBox.ShowMessage('info', 'Currency deleted.', 10);
+                this.msgBox.ShowMessage('info', 'Currency deleted.');
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -194,15 +194,15 @@ export class CurrencyComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newCurrency) {// add
-                this.msgBox.ShowMessage('info', 'Currency added', 10);
+                this.msgBox.ShowMessage('info', 'Currency added.');
                 this.listData.push(this.currency);
             } else { // update
-                this.msgBox.ShowMessage('info', 'Currency updated', 10);
+                this.msgBox.ShowMessage('info', 'Currency updated.');
                 this.listData[this.getItemIndex(this.currency.UUID)] = this.currency;
             }
             this.currency = null;
@@ -212,10 +212,10 @@ export class CurrencyComponent implements OnInit {
             this.currency = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -226,7 +226,7 @@ export class CurrencyComponent implements OnInit {
 
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
     }
 
     onImageUpload(event, itemUUID) {
@@ -239,9 +239,9 @@ export class CurrencyComponent implements OnInit {
 
         if (this.newCurrency === true) {
             const idx = this.getItemIndex(itemUUID);
-            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         } else {
-            this.currency.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.currency.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         }
     }
 
@@ -253,7 +253,7 @@ export class CurrencyComponent implements OnInit {
 
         this._currencyService.getCurrencySymbols(null).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             for (let i = 0; i < response.Result.length; i++) {
@@ -283,7 +283,7 @@ export class CurrencyComponent implements OnInit {
 
         this._currencyService.getAssetClasses(null).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 

@@ -1,35 +1,31 @@
-﻿// Copyright 2015, 2017 GreenWerx.org.
-// Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
+// Copyright 2015, 2017 GreenWerx.org.
+// Licensed under CPAL 1.0,  See license.txt  or go to https://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
 import { Filter } from '../models/filter';
-import { Screen } from '../models/screen';
 
-@Injectable()
-export class CategoriesService extends WebApiService {
+@Injectable({
+    providedIn: 'root'
+  })
+export class CategoriesService  {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor( private api: Api) {
     }
 
     addCategory(category) {
-        return this.invokeRequest('POST', 'api/Categories/Add', JSON.stringify(category));
-    }
-
-    getCategories(filter: Filter) {
-        return this.invokeRequest('GET', 'api/Categories?filter=' + JSON.stringify(filter), );
+        return this.api.invokeRequest('POST', 'api/Categories/Add', category);
     }
 
     deleteCategory(categoryUUID: string) {
-       // var cat = categoryUUID.replace('.', ''    );
-        return this.invokeRequest('DELETE', 'api/Categories/Delete/' + categoryUUID , ''    );
+        return this.api.invokeRequest('DELETE', 'api/Categories/Delete/' + categoryUUID , ''    );
+    }
+
+    getCategories(filter: Filter) {
+        return this.api.invokeRequest('POST', 'api/Categories' , filter, );
     }
 
     updateCategory(category) {
-        return this.invokeRequest('PATCH', 'api/Categories/Update', category);
+        return this.api.invokeRequest('PATCH', 'api/Categories/Update', category);
     }
 }

@@ -19,6 +19,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     <fieldset style="width:90%;">
                         <legend *ngIf="!newUser">Existing Member</legend><legend *ngIf="newUser">Create Account</legend>
                         <p-inputSwitch onLabel="Login" offLabel="Create Account" [(ngModel)]="newUser" [ngModelOptions]="{standalone: true}"></p-inputSwitch>
+                <!--   
                         <div id="pnlUserName" class="form-group">
                             <label class="control-label" for="UserName">Username</label>
                             <input  [(ngModel)]="formCheckout.UserName"  name="Login" #name formControlName="UserName" class="input-sm form-control" type="text">
@@ -37,7 +38,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             <label class="control-label" for="ConfirmPassword">Confirm Password</label>
                             <input type="password" [(ngModel)]="formCheckout.ConfirmPassword" #ConfirmPassword formControlName="ConfirmPassword" id="ConfirmPassword" name="ConfirmPassword" class="input-sm form-control">
                         </div>
-                        <p-checkbox *ngIf="!newUser" [(ngModel)]="RememberMe" label="Remember Me" binary="true" formControlName="RememberMe"></p-checkbox>
+                        <p-checkbox *ngIf="!newUser" [(ngModel)]="rememberMe" label="Remember Me" binary="true" formControlName="RememberMe"></p-checkbox>
                         <div *ngIf="newUser" id="pnlUserEmail" class="form-group">
                             <label class="control-label" for="UserEmail">Email</label>
                             <input type="text" [(ngModel)]="formCheckout.UserEmail" #UserEmail formControlName="UserEmail" id="UserEmail" name="UserEmail" class="input-sm form-control">
@@ -50,6 +51,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             <label class="control-label" for="UserSecurityAnswer">Answer</label>
                             <input type="text" [(ngModel)]="formCheckout.UserSecurityAnswer" #UserSecurityAnswer formControlName="UserSecurityAnswer" id="UserSecurityAnswer" name="UserSecurityAnswer" class="input-sm form-control">
                         </div>
+                    -->
 
                         <button *ngIf="newUser" class="btn btn-primary btn-block" (click)="registerUser($event)">Register</button>
                         <button *ngIf="!newUser" class="btn btn-primary btn-block" (click)="login($event)">Login</button>
@@ -77,6 +79,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             <legend>Order Total</legend>
 
                             <div id="pnlCouponCode" class="form-group">
+                                <!--
                                 <div class="ui-g-6">{{shoppingCart.CartItems.length}} Item(s)</div><div class="ui-g-6">{{currencySymbol}}{{shoppingCart.subTotal}}</div>
                                 <div style="clear:both"></div>
                                 <div class="ui-g-6">Discounts</div><div class="ui-g-6">{{currencySymbol}}{{shoppingCart.discount}}</div>
@@ -99,6 +102,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 <div class="cell-block">
                                     <button class="btn btn-primary" (click)="onClickRedeemCoupon($event)" type="button">Redeem</button>
                                 </div>
+                            -->
                             </div>
                         </fieldset>
                     </div>
@@ -119,9 +123,9 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             </div>
         </form>
         <div class="actions m-t" style="padding-top:5px;">
-            <button *ngIf="activeIndex > 0 && !processingRequest" id="btnPrevInstall" (click)="onClickBackStep()" type="button" class="btn btn-primary btn-prev">Back</button>
+        <!--    <button *ngIf="activeIndex > 0 && !processingRequest" id="btnPrevInstall" (click)="onClickBackStep()" type="button" class="btn btn-primary btn-prev">Back</button>
             <button *ngIf="activeIndex < maxSteps - 1" [disabled]="!enableNext" (click)="onClickNextStep()" id="btnNextInstall" type="button" class="btn btn-primary btn-next">Next</button>
-            <!--<br/>Requires shipping:{{requiresShipping}}<br/>
+            <br/>Requires shipping:{{requiresShipping}}<br/>
             Enable next:{{enableNext}}-->
         </div>
     </div>

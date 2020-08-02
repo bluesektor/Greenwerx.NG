@@ -1,6 +1,6 @@
 
 
-import { Node } from '../models/node';
+import { Node } from './node';
 
 export class AccessLog extends Node {
 

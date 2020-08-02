@@ -5,14 +5,14 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
-import { SessionService } from '../services/session.service';
-import { AccountService } from '../services/account.service';
+import { SessionService } from '../services/user/session.service';
+import { AccountService } from '../services/user/account.service';
 import { CategoriesService } from '../services/categories.service';
 
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, AutoCompleteModule } from 'primeng/primeng';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, AutoCompleteModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 
@@ -24,7 +24,6 @@ import { Category } from '../models/category';
 @Component({
     templateUrl: './measures.component.html',
     selector: 'tm-measures',
-    providers: [UnitsOfMeasureService, ConfirmationService, SessionService,   AccountService, CategoriesService]
 })
 export class MeasuresComponent implements OnInit {
 
@@ -44,7 +43,6 @@ export class MeasuresComponent implements OnInit {
     strainActiveUnitOfMeasure = false;
     msgs: any[] = [];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
 
     constructor(fb: FormBuilder,
         private _confirmationService: ConfirmationService,
@@ -53,7 +51,9 @@ export class MeasuresComponent implements OnInit {
         private _measuresService: UnitsOfMeasureService,
         private _categoriesService: CategoriesService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute,
+        private msgBox:MessageBoxesComponent
+) {
 
         this.formUnitOfMeasureDetail = fb.group({
             Name: ['', Validators.required],
@@ -65,7 +65,7 @@ export class MeasuresComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
         this.loadCategoriesDropDown();
@@ -89,11 +89,11 @@ export class MeasuresComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'UnitOfMeasure deleted.', 10);
+            this.msgBox.ShowMessage('info', 'UnitOfMeasure deleted.');
             const index = this.findSelectedIndex(this.selectedMeasure);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -102,10 +102,10 @@ export class MeasuresComponent implements OnInit {
 
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -125,16 +125,16 @@ export class MeasuresComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.measures = response.Result;
             this.totalRecords = response.TotalRecordCount;
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -167,7 +167,7 @@ export class MeasuresComponent implements OnInit {
             this._measuresService.getAccount(this.selectedMeasure.BreederUUID).subscribe(response => {
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.selectedMeasure = response.Result.Name;
@@ -216,26 +216,26 @@ export class MeasuresComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             if (this.newUnitOfMeasure) {
-                this.msgBox.ShowMessage('info', 'UnitOfMeasure added.', 10);
+                this.msgBox.ShowMessage('info', 'UnitOfMeasure added.');
                 this.selectedMeasure.UUID = response.Result.UUID;
                 this.newUnitOfMeasure = false;
                 this.measures.push(this.selectedMeasure);
 
             } else {
-                this.msgBox.ShowMessage('info', 'UnitOfMeasure updated.', 10);
+                this.msgBox.ShowMessage('info', 'UnitOfMeasure updated.');
                 this.measures[this.findSelectedIndex(this.selectedMeasure)] = this.selectedMeasure;
             }
             this.loadUnitOfMeasures(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -260,7 +260,7 @@ export class MeasuresComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -272,10 +272,10 @@ export class MeasuresComponent implements OnInit {
                 this.selectedCategoryUUID = '';
             }
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

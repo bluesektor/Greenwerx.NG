@@ -1,16 +1,17 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, ElementRef } from '@angular/core';
+import { Component, ElementRef, Input } from '@angular/core';
+ 
 import { AppService } from './services/app.service';
-import { SessionService } from './services/session.service';
+import { SessionService } from './services/user/session.service';
 import { Setting } from './models/setting';
-import { SettingsService } from './services/settings.service';
+import { SettingsService } from './services/settings/settings.service';
+import {CartDropdownComponent} from './store/cart.dropdown.component';
 
 @Component({
-    selector: 'app-navbar-default',
+    selector: 'ctl-navbar-default',
     templateUrl: './navbar.default.component.html',
-    providers: [AppService, SessionService, SettingsService]
 })
 
 export class NavBarDefaultComponent {
@@ -18,24 +19,29 @@ export class NavBarDefaultComponent {
     pageSettings: any;
     highlightedDiv: number;
     navbarLinks: any[] = [];
-    userIsLoggedIn =  false;
-    userIsAdmin = false;
+   @Input() userIsLoggedIn =  false;
+   @Input()  userIsAdmin = false;
     userDropDownExpanded = false;
 
     constructor(
         private _sessionService: SessionService,
         private _appSettings: AppService,
-        private _settingsService: SettingsService) {
-
+        private _settingsService: SettingsService
+        ) {
+           
         this.loadSettings();
+        console.log('navbar.default.component.ts constructor CurrentSession:', this._sessionService.CurrentSession);
     }
 
     loadSettings() {
+        console.log('navbar.default.component.ts loadSettings');
 
-        this.userIsLoggedIn = this._sessionService.CurrentSession.validSession;
-        this.userIsAdmin =  this._sessionService.CurrentSession.isAdmin;
+        if(this._sessionService.CurrentSession.ValidSession !== undefined)
+            this.userIsLoggedIn = this._sessionService.CurrentSession.ValidSession;
+        if(this._sessionService.CurrentSession.IsAdmin !== undefined)   
+            this.userIsAdmin =  this._sessionService.CurrentSession.IsAdmin;
 
-        const res = this._appSettings.getDashboard('navbar_default', '' );
+        const res = this._appSettings.getDashboard('navbar_default' );
         res.subscribe(response => {
             if (response.Code !== 200) {return false; }
             this.pageSettings = response.Result;
@@ -46,9 +52,11 @@ export class NavBarDefaultComponent {
         }, err => {
 
         });
+       
     }
 
     initializeTopMenu(navLinks: any[]) {
+        console.log('navbar.default.component.ts initializeTopMenu');
         const menuItems = [];
 
         for (let i = 0; i < navLinks.length; i++) {
@@ -78,23 +86,17 @@ export class NavBarDefaultComponent {
         return menuItems;
     }
 
-
     toggleActive(index) {
 
+        console.log('navbar.default.component.ts toggleActive');
         if (this.highlightedDiv !== index) {
             this.highlightedDiv = index;
         }
     }
 
-
     toggleUserDropDown() {
+        console.log('navbar.default.component.ts toggleUserDropDown');
         this.userDropDownExpanded = !this.userDropDownExpanded;
-
-        if (this.userDropDownExpanded === true) {
-            // This was the only way I could get the menu to toggle (reload the object).
-            // I tried observables, emitters.. nothing worked.
-            this._sessionService.LoadSessionState();
-        }
     }
 
 }

@@ -5,26 +5,44 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 <app-messageboxes></app-messageboxes>
 <div id="pnlPriceRules">
         <div class="row">
-            <p-dataTable #dt [value]="listData" 
+            <h4>PriceRules</h4>
+            <p-table #dt [value]="listData" 
                 [totalRecords]="listCount" 
                 selectionMode="single" 
                 [(selection)]="selectedItem" 
                 (onRowSelect)="onRowSelect($event.data)"
                 [paginator]="true" rows="25" [responsive]="true" [lazy]="true" (onLazyLoad)="lazyLoadPriceRuleList($event)">
-                <p-header>PriceRules</p-header>
-                <p-column field="Name" header="Name" [sortable]="true">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                        <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="ReferenceType" header="Type"></p-column>
-                <p-column field="Code" header="Code"></p-column>
-                <p-column field="MaxUseCount" header="Max Use"></p-column>
-                <p-column field="Expires" header="Expires"></p-column>
-                <p-column field="Mandatory" header="Mandatory"></p-column>
-                <p-column field="Minimum" header="Minimum"></p-column>
-                <p-column field="Maximum" header="Maximum"></p-column>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Name</th>
+                        <th>ReferenceType</th>
+
+                        <th>Code</th>
+                        <th>MaxUseCount</th>
+                        <th>Expires</th>
+                        <th>Mandatory</th>
+                        <th>Minimum</th>
+                        <th>Maximum</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                    <tr>
+                        <td>
+                                <img src="{{baseUrl}}{{data.Image}}" style="height:32px;" (click)="onRowSelect(data)" />
+                                <label (click)="onRowSelect(data)">{{data.Name}}</label>
+                         </td>
+                         <td>{{data.ReferenceType}}</td>
+                        <td>{{data.Code}}</td>
+                        <td>{{data.MaxUseCount}}</td>
+                        <td>{{data.Expires}}</td>
+                        <td>{{data.Mandatory}}</td>
+                        <td>{{data.Minimum}}</td>
+                        <td>{{data.Maximum}}</td>
+                       
+                    </tr>
+                </ng-template>
+
                 <p-footer>
                     <div class="cell-block" style="width:25%">
                         <button type="button" class="form-control input-sm" value="Add" (click)="showDialogToAdd()" label="Add">
@@ -32,7 +50,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         </button>
                     </div>
                 </p-footer>
-            </p-dataTable>
+            </p-table>
            
             <!--Dialog for  crud actions -->
             <p-dialog header="PriceRule Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">

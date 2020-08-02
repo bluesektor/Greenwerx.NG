@@ -6,7 +6,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 
 <div id="pnlMeasures">
         <div class="row">
-            <p-dataTable [value]="measures"
+            <h4>Measures</h4>
+            <p-table [value]="measures"
                          selectionMode="single"
                          [(selection)]="selectedMeasure"
                          (onRowSelect)="onRowSelect($event)"
@@ -17,17 +18,22 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [lazy]="true"
                          (onLazyLoad)="lazyLoadUnitOfMeasuresList($event)"
                          [totalRecords]="totalRecords">
-                <p-header>Measures</p-header>
-                <p-column field="Name" header="Name" [sortable]="true"></p-column>
-                <p-footer>
+             
+                
+                <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                    <tr>
+                        <td>{{data.Name}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
                     <div class="ui-helper-clearfix" style="width:25%">
                         <button type="button" class="form-control input-sm" value="Add"
                                 (click)="showDialogToAdd()" label="Add">
                             <i class="fa fa-plus" style="color:green;"></i> Add
                         </button>
                     </div>
-                </p-footer>
-            </p-dataTable>
+                </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Measure Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -49,13 +55,13 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             </option>
                         </select>
                     </div>
-                <p-footer>
+                <ng-template pTemplate="footer">
                     <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="saveMeasure()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
                         <button *ngIf="!newMeasure" type="button" style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="onDeleteMeasure()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>
                     </div>
-                </p-footer>
+                </ng-template>
             </p-dialog>
 
         </div>

@@ -3,13 +3,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
-import { SessionService } from '../services/session.service';
-import { AccountService } from '../services/account.service';
+import { SessionService } from '../services/user/session.service';
+import { AccountService } from '../services/user/account.service';
 
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, AutoCompleteModule } from 'primeng/primeng';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, AutoCompleteModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { PlantsService } from '../services/plants.service';
@@ -24,7 +24,6 @@ import { GeoService } from '../services/geo.service';
 @Component({
     templateUrl: './strains.component.html',
 
-    providers: [PlantsService, ConfirmationService, SessionService, GeoService, CategoriesService, AccountService]
 })
 export class StrainsComponent implements OnInit {
 
@@ -45,14 +44,13 @@ export class StrainsComponent implements OnInit {
     formStrainDetail: FormGroup;
     filteredAccounts: Account[] = [];
     searching = false;
+    searchTerm:string;
     searchStrains: Filter = new Filter();
 
     // ===--- Top Menu Bar ---===
     strainActiveStrain = false;
     msgs: any[] = [];
-
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+ 
     constructor(fb: FormBuilder,
         private _strainService: PlantsService,
         private _geoService: GeoService,
@@ -61,7 +59,8 @@ export class StrainsComponent implements OnInit {
         private _accountService: AccountService,
         private _categoriesService: CategoriesService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute
+        ,private msgBox : MessageBoxesComponent) {
 
         this.formStrainDetail = fb.group({
             Name: ['', Validators.required],
@@ -78,7 +77,7 @@ export class StrainsComponent implements OnInit {
     ngOnInit() {
         this.loadingData = true;
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
 
@@ -106,7 +105,7 @@ export class StrainsComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.categories = response.Result;
@@ -117,10 +116,10 @@ export class StrainsComponent implements OnInit {
                 this.selectedCategoryUUID = '';
             }
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -142,7 +141,7 @@ export class StrainsComponent implements OnInit {
             this.loadingData = false;
             this.displayDialog = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locations = response.Result;
@@ -153,10 +152,10 @@ export class StrainsComponent implements OnInit {
             this.locations.push(l);
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -183,11 +182,11 @@ export class StrainsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Strain deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Strain deleted.');
             const index = this.findSelectedIndex(this.selectedStrain);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -196,10 +195,10 @@ export class StrainsComponent implements OnInit {
 
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -233,16 +232,16 @@ export class StrainsComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.strains = response.Result;
             this.totalRecords = response.TotalRecordCount;
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -276,7 +275,7 @@ export class StrainsComponent implements OnInit {
             this._accountService.getAccount(this.selectedStrain.BreederUUID).subscribe(response => {
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.selectedAccount = response.Result.Name;
@@ -325,26 +324,26 @@ export class StrainsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             if (this.newStrain) {
-                this.msgBox.ShowMessage('info', 'Strain added.', 10);
+                this.msgBox.ShowMessage('info', 'Strain added.');
                 this.selectedStrain.UUID = response.Result.UUID;
                 this.newStrain = false;
                 this.strains.push(this.selectedStrain);
 
             } else {
-                this.msgBox.ShowMessage('info', 'Strain updated.', 10);
+                this.msgBox.ShowMessage('info', 'Strain updated.');
                 this.strains[this.findSelectedIndex(this.selectedStrain)] = this.selectedStrain;
             }
             this.loadStrains(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -369,7 +368,7 @@ export class StrainsComponent implements OnInit {
         filter.Screens.push(screen);
         this._accountService.getAllAccounts(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.filteredAccounts = response.Result;
@@ -379,7 +378,7 @@ export class StrainsComponent implements OnInit {
     onSelectAccount(value) {
         this._accountService.getAccount(value.UUID).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.selectedStrain.BreederUUID = value.UUID;
@@ -395,7 +394,7 @@ export class StrainsComponent implements OnInit {
 
         this._accountService.getAllAccounts(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.filteredAccounts = response.Result;
@@ -425,16 +424,16 @@ export class StrainsComponent implements OnInit {
             this._strainService.getStrains(this.searchStrains).subscribe(response => {
                 this.loadingData = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.strains = response.Result;
                 this.totalRecords = response.TotalRecordCount;
             }, err => {
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
                 this.loadingData = false;
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);

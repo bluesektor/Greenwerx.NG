@@ -2,10 +2,8 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { UnitOfMeasure } from '../models/unitofmeasure';
@@ -16,29 +14,28 @@ import { PriceRule } from '../models/pricerule';
 import { BasicValidators } from '../common/basicValidators';
 
 @Injectable()
-export class FinanceService extends WebApiService {
+export class FinanceService   {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor(private api: Api) {
     }
     getPriceRule(priceRuleCode: string) {
-        return this.invokeRequest('GET', 'api/Finance/PriceRules/' + priceRuleCode);
+        return this.api.invokeRequest('GET', 'api/Finance/PriceRules/' + priceRuleCode);
     }
     getPriceRules(filters?: Filter[]) {
-        return this.invokeRequest('GET', 'api/Finance/PriceRules/' + '?filter=' + JSON.stringify(filters));
+        return this.api.invokeRequest('GET', 'api/Finance/PriceRules/' ,filters);
     }
 
 
     deletePriceRule(priceRuleUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Finance/PriceRules/Delete/' + priceRuleUUID);
+        return this.api.invokeRequest('DELETE', 'api/Finance/PriceRules/Delete/' + priceRuleUUID);
     }
 
     addPriceRule(priceRule: PriceRule) {
-        return this.invokeRequest('POST', 'api/Finance/PriceRules/Insert', JSON.stringify(priceRule));
+        return this.api.invokeRequest('POST', 'api/Finance/PriceRules/Insert', priceRule);
     }
 
     updatePriceRule(priceRule: PriceRule) {
-        return this.invokeRequest('PATCH', 'api/Finance/PriceRules/Update', JSON.stringify(priceRule));
+        return this.api.invokeRequest('PATCH', 'api/Finance/PriceRules/Update', priceRule);
     }
 
     calcPriceRule(amount: number, operator: string, operand: number): number {
@@ -87,66 +84,66 @@ export class FinanceService extends WebApiService {
     }
 
     getFinanceAccountTransactions(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Finance/Accounts/Transactions/' + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/Finance/Accounts/Transactions/' ,filter );
     }
 
     deleteFinanceAccountTransaction(financeAccountUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Finance/Accounts/Transactions/Delete/' + financeAccountUUID);
+        return this.api.invokeRequest('DELETE', 'api/Finance/Accounts/Transactions/Delete/' + financeAccountUUID);
     }
 
     addFinanceAccountTransaction(financeAccount: FinanceAccountTransaction) {
-        return this.invokeRequest('POST', 'api/Finance/Accounts/Transactions/Add', JSON.stringify(financeAccount));
+        return this.api.invokeRequest('POST', 'api/Finance/Accounts/Transactions/Add', financeAccount);
     }
 
     updateFinanceAccountTransaction(currency: FinanceAccountTransaction) {
-        return this.invokeRequest('PATCH', 'api/Finance/Accounts/Transactions/Update', JSON.stringify(currency));
+        return this.api.invokeRequest('PATCH', 'api/Finance/Accounts/Transactions/Update', currency);
     }
 
     getFinanceAccounts(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Finance/Accounts/' + '?filter=' + JSON.stringify(filter));
+        return this.api.invokeRequest('GET', 'api/Finance/Accounts/' ,filter);
     }
 
     getPaymenOptions() {
-        return this.invokeRequest('GET', 'api/Finance/PaymentOptions');
+        return this.api.invokeRequest('GET', 'api/Finance/PaymentOptions');
     }
 
     deleteFinanceAccount(financeAccountUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Finance/Accounts/Delete/' + financeAccountUUID);
+        return this.api.invokeRequest('DELETE', 'api/Finance/Accounts/Delete/' + financeAccountUUID);
     }
 
     addFinanceAccount(financeAccount: FinanceAccount) {
-        return this.invokeRequest('POST', 'api/Finance/Accounts/Add', JSON.stringify(financeAccount));
+        return this.api.invokeRequest('POST', 'api/Finance/Accounts/Add', financeAccount);
     }
 
     updateFinanceAccount(account: FinanceAccount) {
-        return this.invokeRequest('PATCH', 'api/Finance/Accounts/Update', JSON.stringify(account));
+        return this.api.invokeRequest('PATCH', 'api/Finance/Accounts/Update', account);
     }
 
     getCurrencies(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Finance/Currency' + '?filter=' + JSON.stringify(filter));
+        return this.api.invokeRequest('GET', 'api/Finance/Currency' ,filter);
     }
 
     getCurrency(name: string) {
-        return this.invokeRequest('GET', 'api/Finance/Currency/' + name);
+        return this.api.invokeRequest('GET', 'api/Finance/Currency/' + name);
     }
 
     getCurrencySymbols(filter?: Filter ) {
-        return this.invokeRequest('GET', 'api/Finance/Currency/Symbols');
+        return this.api.invokeRequest('GET', 'api/Finance/Currency/Symbols');
     }
     getAssetClasses(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Finance/AssetClasses');
+        return this.api.invokeRequest('GET', 'api/Finance/AssetClasses');
     }
 
 
     addCurrency(currency: Currency) {
-        return this.invokeRequest('POST', 'api/Finance/Currency/Add', JSON.stringify(currency));
+        return this.api.invokeRequest('POST', 'api/Finance/Currency/Add', currency);
     }
 
     updateCurrency(currency: Currency) {
-        return this.invokeRequest('PATCH', 'api/Finance/Currency/Update', JSON.stringify(currency));
+        return this.api.invokeRequest('PATCH', 'api/Finance/Currency/Update', currency);
     }
 
     deleteCurrency(currencyUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Finance/Currency/Delete/' + currencyUUID );
+        return this.api.invokeRequest('DELETE', 'api/Finance/Currency/Delete/' + currencyUUID );
     }
 }

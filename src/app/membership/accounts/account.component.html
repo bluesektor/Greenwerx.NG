@@ -19,7 +19,7 @@
                                     </div>
                                    
                                 </fieldset>
-                                <button  *ngIf="!savingData"  [disabled]="!profileForm.form.valid"  (click)="profileForm.ngSubmit.emit()" type="submit" class="btn btn-primary btn-block" >
+                                <button  *ngIf="!savingData"   (click)="profileForm.ngSubmit.emit()" type="submit" class="btn btn-primary btn-block" >
                                     Save
                                 </button>
                                 <div *ngIf="savingData"   style="width:100%; text-align: center;" > <i class="fa fa-spinner fa-spin fa-2x"></i> </div>

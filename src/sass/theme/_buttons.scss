@@ -174,22 +174,22 @@ button.btn.btn-inverse {
 
   &.progress-button-style-move-up, &.progress-button-style-slide-down {
     .content {
-      background-color: darken($btnColor, 10);
+      background-color: darken($btnColor);
     }
   }
 
   &.progress-button-style-lateral-lines .progress-inner {
-    border-color: darken($btnColor, 10);
+    border-color: darken($btnColor);
     background: 0 0;
   }
 
   .progress {
-    background-color: darken($btnColor, 10);
-    box-shadow: 0 1px 0 darken($btnColor, 10);
+    background-color: darken($btnColor);
+    box-shadow: 0 1px 0 darken($btnColor);
   }
 
   .progress-inner {
-    background-color: darken($btnColor, 20);
+    background-color: darken($btnColor);
   }
   &.progress-button-perspective {
     background: none;

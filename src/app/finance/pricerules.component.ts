@@ -3,19 +3,19 @@
 
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CheckboxModule, FileUploadModule, CalendarModule } from 'primeng/primeng';
+import { CheckboxModule, FileUploadModule, CalendarModule } from 'primeng';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule } from 'primeng/primeng';
+import {TableModule, SharedModule, DialogModule, AccordionModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { PriceRule } from '../models/pricerule';
 import { FinanceService } from '../services/finance.service';
 import { AppService } from '../services/app.service';
+import { Api}  from '../services/api';
 
 @Component({
     templateUrl: './pricerules.component.html',
-    providers: [SessionService, FinanceService, AppService]
 
 })
 export class PriceRulesComponent implements OnInit {
@@ -37,20 +37,20 @@ export class PriceRulesComponent implements OnInit {
     operators: string[];
     price = 100;
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+  
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _sessionService: SessionService,
-        private _priceruleService: FinanceService) {
-        this.msgBox = new MessageBoxesComponent();
+        private _priceruleService: FinanceService
+        ,private msgBox : MessageBoxesComponent) {
+       
     }
 
     ngOnInit() {
-        this.baseUrl = this._appService.BaseUrl();
-        this.fileUploadUrl = this._appService.BaseUrl() + 'api/File/Upload/';
+        this.baseUrl = Api.url;
+        this.fileUploadUrl = Api.url + 'api/File/Upload/';
 
         this.priceRuleTypes = ['student', 'military', 'coupon', 'promotion', 'shipping', 'delivery', 'taxes'];
         this.operators = ['=', '+', '-', '*', '/', '%'];
@@ -112,7 +112,7 @@ export class PriceRulesComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.listData = response.Result;
@@ -120,10 +120,10 @@ export class PriceRulesComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -174,7 +174,7 @@ export class PriceRulesComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const index = this.findSelectedItemIndex(this.selectedItem.UUID);
@@ -182,14 +182,14 @@ export class PriceRulesComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1);
                 this.listCount--;
-                this.msgBox.ShowMessage('info', 'PriceRule deleted.', 10);
+                this.msgBox.ShowMessage('info', 'PriceRule deleted.');
                 this.loadPriceRules(1, 25); // the array manipulation isn't working so just relaoding for now
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -223,18 +223,18 @@ export class PriceRulesComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newPriceRule) {// add
-                this.msgBox.ShowMessage('info', 'PriceRule added', 10);
+                this.msgBox.ShowMessage('info', 'PriceRule added.');
                 this.selectedItem = new PriceRule();
                 this.selectedItem = response.Result;
                 this.listData.push(response.Result);
                 this.listCount++;
             } else { // update
-                this.msgBox.ShowMessage('info', 'PriceRule updated', 10);
+                this.msgBox.ShowMessage('info', 'PriceRule updated.');
                 let idx = this.findSelectedItemIndex(this.selectedItem.UUID);
                 this.listData[idx] = this.selectedItem;
             }
@@ -246,10 +246,10 @@ export class PriceRulesComponent implements OnInit {
             this.selectedItem = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

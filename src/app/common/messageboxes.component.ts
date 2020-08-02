@@ -7,6 +7,11 @@ import {
 
 import { BasicValidators } from './basicValidators';
 
+//todo ad subscribe and unsubscribe, then add new parameter to display as notification or not
+import {MessagePump} from '../common/message.pump';
+import { NotificationsService, NotificationType } from 'angular2-notifications';
+//import { triggerAsyncId } from 'async_hooks';
+
 @Component({
     selector: 'app-messageboxes',
     templateUrl: './messageboxes.component.html'
@@ -17,17 +22,65 @@ export class MessageBoxesComponent  {
 
      showMessageBox = false;
      message: string;
-     displayStyle: string;
      messageType: string;
+    // types = ['alert', 'error', 'info', 'warn', 'success'];
+    // animationTypes = ['fromRight', 'fromLeft', 'scale', 'rotate'];
 
-    ShowMessage(msgType: string, message: string, displayTimeSeconds: number, style?: string) {
+     constructor( private _messagePump:MessagePump,
+         private _notifications: NotificationsService ) {
+  
+     }
+
+
+    public  notify(type: string, title:string, message:string){
+        console.log('messageboxes NOTIFY');
+        this._notifications.create(title, message, NotificationType.Error );
+     }
+
+    public ShowMessage(msgType: string, message: string,  pumpTo?: string) {
         console.log('message boxes.compoentent.ts ShowMEssage');
         if ( msgType && msgType !== null) {
             this.messageType = msgType.toLowerCase();
         }
+        
+        if(pumpTo !== null && pumpTo !== undefined){
+                 this._messagePump.publish(pumpTo, {
+                    msg: message,
+                     time: new Date()
+         });
+        }
+
+        switch(this.messageType){
+                case 'error':
+                    this._notifications.create("Error!", message, NotificationType.Error );
+                    break;
+                    case 'unauthorized':
+                        this._notifications.create("Error!", message, NotificationType.Error );
+                        break;
+                    case 'badreqeust':
+                        this._notifications.create("Error!", message, NotificationType.Error );
+                        break;
+              
+                    case   'info':
+                        this._notifications.create("Info", message, NotificationType.Info );
+                        break;
+                    case  'warning':
+                        this._notifications.create("Warning", message, NotificationType.Warn );
+                        break;
+                    case  'ok':
+                        this._notifications.create("Success", message, NotificationType.Success );
+                        break;
+                    case  'success':
+                        this._notifications.create("Success", message, NotificationType.Success );
+                        break;
+                   // default:
+                     //   this._notifications.create("", message, NotificationType.Bare );
+                    //    break;
+        }
+       
+        /*
 
         this.message = message;
-
         this.displayStyle = style;
 
         if (msgType === '' || message === '') {
@@ -39,9 +92,10 @@ export class MessageBoxesComponent  {
         setTimeout(() => {
             this.showMessageBox = false;
         },  displayTimeSeconds * 1000);
+        */
     }
 
-    ShowResponseMessage(code: number, displayTime, msg?: string) {
+    public ShowResponseMessage(code: number,  msg?: string,  pumpTo?: string ) {
         const msgType = 'error';
         let text = msg;
 
@@ -58,12 +112,12 @@ export class MessageBoxesComponent  {
                 break;
         }
 
-        this.ShowMessage(msgType, text, displayTime);
+        this.ShowMessage(msgType, text, pumpTo);
 
     }
 
 
-    closeMessageBox() {
+    public closeMessageBox() {
         this.showMessageBox = false;
         this.message = '';
     }

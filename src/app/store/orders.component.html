@@ -4,7 +4,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 -->
 <app-messageboxes></app-messageboxes>
 <div id="pnlOrders">
-            <p-dataTable [value]="listData"
+    <h4>Orders</h4>
+            <p-table [value]="listData"
                          [totalRecords]="listCount"
                          selectionMode="single"
                          [(selection)]="selectedItem"
@@ -14,25 +15,42 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [responsive]="true"
                          [lazy]="true"
                          (onLazyLoad)="lazyLoadOrderList($event)">
-                <p-header>Orders</p-header>
-                <p-column field="Name" header="Name" [sortable]="true">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                        <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="CustomerEmail" header="Customer Email" [sortable]="true"></p-column>
-                <p-column field="Total" header="Total" [sortable]="true"></p-column>
-                <p-column field="PayStatus" header="Pay Status" [sortable]="true"></p-column>
-                <p-footer>
+                <ng-template pTemplate="header">
+                    <tr>
+                    <th field="Name" header="Name" >
+                        <ng-template let-listItem="rowData" pTemplate="body">
+                            <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
+                            <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
+                        </ng-template>
+                    </th>
+                    <th field="CustomerEmail" header="Customer Email"></th>
+                    <th field="Total" header="Total" ></th>
+                    <th field="PayStatus" header="Pay Status" ></th>
+                </tr>
+                 </ng-template>
+                 <ng-template pTemplate="body" let-item>
+                    <tr>
+                        <td field="Name" header="Name">
+                            <ng-template let-listItem="rowData" pTemplate="body">
+                                <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
+                                <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
+                            </ng-template>
+                        </td>
+                        <td field="CustomerEmail" header="Customer Email" ></td>
+                        <td field="Total" header="Total"  ></td>
+                        <td field="PayStatus" header="Pay Status" ></td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
                     <div class="cell-block" style="width:25%">
                         <button type="button" class="form-control input-sm" value="Add"
                                 (click)="showDialogToAdd()" label="Add">
                             <i class="fa fa-plus" style="color:green;"></i> Add
                         </button>
                     </div>
-                </p-footer>
-            </p-dataTable>
+                </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Order Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -42,13 +60,14 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         <input pInputText id="Name" [(ngModel)]="selectedItem.Name" class="input-sm form-control" />
                     </div>
                     <div class="form-group">
-
+ <!-- 
                         <img src="{{baseUrl}}{{selectedItem.Image}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
+                   
                         <p-fileUpload *ngIf="editImage" name="uploadedFiles[]" url="{{fileUploadUrl}}{{selectedItem.UUID}}/{{selectedItem.UUIDType}}"
                                       id="{{selectedItem.UUID}}"
                                       (onBeforeSend)="onBeforeSendFile($event)"
                                       (onUpload)="onImageUpload($event,selectedItem.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
-                    </div>
+                  -->  </div>
 
                     <div class="form-group">
                         <!--<label for="OrderUUID">Location Type</label>

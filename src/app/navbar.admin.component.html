@@ -13,40 +13,40 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
         </button>
         <a class="navbar-brand" routerLink="home" routerLinkActive="active">{{pageTitle}}</a>
     </div>
-    <!-- /.navbar-header -->
-    <ul class="nav navbar-top-links navbar-right">
-        <!--as the other dropdowns are added remove the float:right -->
+   <!--  /.navbar-header  -->
+   <ul class="nav navbar-top-links navbar-right">
+     <!--    as the other dropdowns are added remove the float:right -->
         <tm-cart-dropdown></tm-cart-dropdown>
-        <li class="dropdown" (click)="toggleUserDropDown()" [class.open]="userDropDownExpanded" >
-
+     <li class="dropdown" (click)="toggleUserDropDown()" [class.open]="userDropDownExpanded" >
+ 
             <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" >
                 <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
             </a>
-            <ul *ngIf="_sessionService.CurrentSession.validSession" class="dropdown-menu dropdown-user">
+            <ul *ngIf="_sessionService.CurrentSession.ValidSession" class="dropdown-menu dropdown-user">
                 <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-user fa-fw"></i> Profile</a></li>
-                <li *ngIf="_sessionService.isAdmin" id="mnuAdminItem"><a href="/Admin"><i class="fa fa-gear fa-fw"></i> Admin</a></li>
+                <li *ngIf="_sessionService.CurrentSession.IsAdmin" id="mnuAdminItem"><a href="/Admin"><i class="fa fa-gear fa-fw"></i> Admin</a></li>
                 <li class="divider"></li>
                 <li><a routerLink="/membership/login" routerLinkActive="active"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
             </ul>
-            <ul *ngIf="!_sessionService.CurrentSession.validSession" class="dropdown-menu dropdown-user">
+            <ul *ngIf="!_sessionService.CurrentSession.ValidSession" class="dropdown-menu dropdown-user">
                 <li><a routerLink="/membership/login" routerLinkActive="active"><i class="fa fa-sign-out fa-fw"></i>Log in</a></li>
                 <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-pencil-square-o fa-fw"></i>Register</a></li>
                 <li><a routerLink="/membership/profile" routerLinkActive="active"><i class="fa fa-user fa-fw"></i> Orders</a></li>
             </ul>
-            <!-- /.dropdown-user -->
+           <!--    /.dropdown-user -->
         </li>
-        <!-- /.dropdown -->
+     <!--    /.dropdown -->
     </ul>
-    <!-- /.navbar-top-links -->
+  <!--   /.navbar-top-links -->
 
-    <div class="navbar-default sidebar" role="navigation">
-        <!--<div class="sidebar-nav navbar-collapse"  [ngClass]="{'sidebar-nav navbar-collapse collapse': collapseDiv === true}" >-->
+     <div class="navbar-default sidebar" role="navigation">
+      
         <div class="sidebar-nav navbar-collapse" [ngClass]="{'sidebar-nav navbar-collapse collapse': collapseDiv === true}">
             <ul class="nav" id="side-menu">
                 <p-panelMenu [model]="sidePanelItems"></p-panelMenu>
             </ul>
         </div>
-        <!-- /.sidebar-collapse -->
-    </div>
-    <!-- /.navbar-static-side -->
+     <!--    /.sidebar-collapse -->
+   </div>
+  <!--    /.navbar-static-side -->
 </nav>

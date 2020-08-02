@@ -5,15 +5,15 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CheckboxModule, FileUploadModule } from 'primeng/primeng';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule } from 'primeng/primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { FinanceAccount } from '../models/financeaccount';
 import { FinanceService } from '../services/finance.service';
 import { AppService } from '../services/app.service';
-
+import {Api} from '../services/api';
 
 @Component({
     templateUrl: './payoptions.component.html',
@@ -44,12 +44,12 @@ export class PayOptionsComponent implements OnInit {
         private _appService: AppService,
         private _sessionService: SessionService,
         private _financeaccountService: FinanceService) {
-        this.msgBox = new MessageBoxesComponent();
+       
     }
 
     ngOnInit() {
-        this.baseUrl = this._appService.BaseUrl();
-        this.fileUploadUrl = this._appService.BaseUrl() + 'api/File/Upload/';
+        this.baseUrl = Api.url;
+        this.fileUploadUrl = Api.url + 'api/File/Upload/';
         this.selectedItem.Image = '/Content/Default/Images/add.png';
     }
 
@@ -71,7 +71,7 @@ export class PayOptionsComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.listData = response.Result;
@@ -79,10 +79,10 @@ export class PayOptionsComponent implements OnInit {
 
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.logOut();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -130,21 +130,21 @@ export class PayOptionsComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const index = this.findSelectedItemIndex(this.selectedItem.UUID); // this.locations.indexOf(this.location)
                 // Here, with the splice method, we remove 1 financeaccountect
                 // at the given index.
                 this.listData.splice(index, 1);
-                this.msgBox.ShowMessage('info', 'FinanceAccount deleted.', 10   );
+                this.msgBox.ShowMessage('info', 'FinanceAccount deleted.');
                 this.loadFinanceAccounts(1, 25); // not updating the list so reload for now.
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.logOut();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -166,15 +166,15 @@ export class PayOptionsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newItem) {// add
-                this.msgBox.ShowMessage('info', 'FinanceAccount added', 10   );
+                this.msgBox.ShowMessage('info', 'FinanceAccount added');
                 this.listData.push(this.selectedItem);
             } else { // update
-                this.msgBox.ShowMessage('info', 'FinanceAccount updated', 10    );
+                this.msgBox.ShowMessage('info', 'FinanceAccount updated'   );
                 this.listData[this.findSelectedItemIndex(this.selectedItem.UUID)] = this.selectedItem;
             }
             this.selectedItem = null;
@@ -184,10 +184,10 @@ export class PayOptionsComponent implements OnInit {
             this.selectedItem = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.logOut();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -199,7 +199,7 @@ export class PayOptionsComponent implements OnInit {
 
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer ' +  Api.authToken);
     }
 
     onImageUpload(event, itemUUID) {
@@ -211,9 +211,9 @@ export class PayOptionsComponent implements OnInit {
 
         if (this.newItem === true) {
             const idx = this.findSelectedItemIndex(itemUUID);
-            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         } else {
-            this.selectedItem.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.selectedItem.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         }
     }
 

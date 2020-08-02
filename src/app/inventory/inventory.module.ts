@@ -5,32 +5,30 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
-import { CheckboxModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
 import { MessageBoxesModule } from '../common/messageboxes.module';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, DropdownModule,
-     InputSwitchModule, FileUploadModule} from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, DropdownModule,
+     InputSwitchModule, FileUploadModule} from 'primeng';
 import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.service';
 
-import { CommontmModule } from '../common/commontm.module';
+import { CommonModuleEx } from '../common/common.moduleex';
 import { InventoryComponent } from './inventory.component';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRoutingModule} from './inventory.routing';
+import {PipesModule} from '../common/pipes/pipes.module';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule,
+        CommonModule,
         CheckboxModule,
-        DataTableModule,
+        TableModule,
         AccordionModule,
         SharedModule,
         DialogModule,
@@ -39,7 +37,8 @@ import { InventoryRoutingModule} from './inventory.routing';
         InputSwitchModule,
         FileUploadModule,
         InventoryRoutingModule,
-        MessageBoxesModule
+        MessageBoxesModule,
+        PipesModule
     ]
     ,
     declarations: [
@@ -47,12 +46,6 @@ import { InventoryRoutingModule} from './inventory.routing';
     exports: [
         InventoryComponent
     ],
-    providers: [
-        InventoryService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService
-    ]
 })
 export class InventoryModule {
 

@@ -421,7 +421,7 @@ module.exports = function(Chart) {
 	function parseMaxStyle(styleValue, node, parentProperty) {
 		var valueInPixels;
 		if (typeof styleValue === 'string') {
-			valueInPixels = parseInt(styleValue, 10);
+			valueInPixels = parseInt(styleValue);
 
 			if (styleValue.indexOf('%') !== -1) {
 				// percentage * size in dimension
@@ -478,8 +478,8 @@ module.exports = function(Chart) {
 			return domNode.clientWidth;
 		}
 
-		var paddingLeft = parseInt(helpers.getStyle(container, 'padding-left'), 10);
-		var paddingRight = parseInt(helpers.getStyle(container, 'padding-right'), 10);
+		var paddingLeft = parseInt(helpers.getStyle(container, 'padding-left'));
+		var paddingRight = parseInt(helpers.getStyle(container, 'padding-right'));
 		var w = container.clientWidth - paddingLeft - paddingRight;
 		var cw = helpers.getConstraintWidth(domNode);
 		return isNaN(cw) ? w : Math.min(w, cw);
@@ -490,8 +490,8 @@ module.exports = function(Chart) {
 			return domNode.clientHeight;
 		}
 
-		var paddingTop = parseInt(helpers.getStyle(container, 'padding-top'), 10);
-		var paddingBottom = parseInt(helpers.getStyle(container, 'padding-bottom'), 10);
+		var paddingTop = parseInt(helpers.getStyle(container, 'padding-top'));
+		var paddingBottom = parseInt(helpers.getStyle(container, 'padding-bottom'));
 		var h = container.clientHeight - paddingTop - paddingBottom;
 		var ch = helpers.getConstraintHeight(domNode);
 		return isNaN(ch) ? h : Math.min(h, ch);

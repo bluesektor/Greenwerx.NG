@@ -1,16 +1,15 @@
-﻿import { Component, ViewChild, Inject } from '@angular/core';
+﻿import { Component, ViewChild, Inject, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup,  Validators } from '@angular/forms'; //
-import { UserService } from '../../services/user.service';
-import { SessionService } from '../../services/session.service';
-import { CheckboxModule } from 'primeng/primeng';
+import { UserService } from '../../services/user/user.service';
+import { SessionService } from '../../services/user/session.service';
+import { CheckboxModule } from 'primeng';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
-import {  CookieService  } from 'angular2-cookie/services/cookies.service';
-
+import { Api } from 'src/app/services/api';
+import { Session } from 'src/app/models';
 @Component({
 
     templateUrl: './login.component.html',
-    providers: [CookieService, UserService, SessionService]
 })
 
 export class LoginComponent {
@@ -20,18 +19,15 @@ export class LoginComponent {
     rememberMe = false;
     returnUrl: string;
     authorizing = false;
-
-
-
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+  
     constructor(
         @Inject(FormBuilder)  fb: FormBuilder,
         public _userService: UserService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _cookieService: CookieService,
-        public _sessionService: SessionService  ) {
+        private cdr: ChangeDetectorRef,
+        public _sessionService: SessionService 
+        ,private msgBox : MessageBoxesComponent ) {
 
         this.form = fb.group({
             userName: ['', Validators.required],
@@ -47,8 +43,7 @@ export class LoginComponent {
             this.returnUrl = '';
         }
 
-        this.userName = this._cookieService.get('userName');
-
+        this.userName = this._sessionService.localSettings.getValue('userName', '');
     }
 
     toggleRememberMe($event) {
@@ -59,64 +54,43 @@ export class LoginComponent {
         this.msgBox.closeMessageBox();
         this.authorizing = true;
         if (this.rememberMe) {
-            this._cookieService.put('userName', this.userName);
+            this._sessionService.localSettings.setValue('userName', this.userName);
         } else {
-            this._cookieService.remove('userName');
+            this._sessionService.localSettings.remove('userName');
         }
         console.log('login..        ');
-        const result = this._userService.login(this.form.value);
+        const result = this._sessionService.login(this.form.value);
         result.subscribe( response => {
             this.authorizing = false;
             if (response.Code !== 200) {
                 console.log('login        ', response.Message);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.form.markAsPristine();
-            this._sessionService.CurrentSession.authToken = response.Result.Authorization;
-            this._sessionService.CurrentSession.isAdmin = response.Result.IsAdmin;
-            this._sessionService.CurrentSession.userAccountUUID = response.Result.AccountUUID;
-            this._sessionService.CurrentSession.userUUID = response.Result.UserUUID;
-            this._sessionService.CurrentSession.defaultLocationUUID = response.Result.DefaultLocationUUID;
-            this._sessionService.CurrentSession.validSession = true;
-            this._sessionService.SaveSessionState();
-            if (!this.returnUrl) {
-                window.location.href  = '../';
-            } else {
-                window.location.href  = this.returnUrl;
-            }
-            // this._router.navigate([this.returnUrl ], { relativeTo: this._route });
+           Api.authToken = response.Result.Authorization;
+           this._sessionService.CurrentSession = new Session();
+            this._sessionService.CurrentSession.IsAdmin = response.Result.IsAdmin;
+            this._sessionService.CurrentSession.AccountUUID = response.Result.AccountUUID;
+            this._sessionService.CurrentSession.UserUUID = response.Result.UserUUID;
+            this._sessionService.CurrentSession.DefaultLocationUUID = response.Result.DefaultLocationUUID;
+            this._sessionService.CurrentSession.ValidSession = true;
+            this._sessionService.saveSessionLocal();
+            this.msgBox.ShowMessage( 'ok', 'Login success!','user:login');
+            this._router.navigate(['/' ], { relativeTo: this._route });
             },
             err => {
                 this.authorizing = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
             }
         );
     }
 
-
     LogOut() {
-        this.authorizing = true;
-
-        const result = this._userService.logout();
-        result.subscribe(
-            response => {
-                this.authorizing = false;
-                if (response.Code !== 200) {
-
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
-                    return false;
-                }
-
-                setTimeout(() => {
-                    this._router.navigate(['/membership/login'], { relativeTo: this._route });
-                }, 3000);
-            },
-            err => {
-                this.authorizing = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
-            }
-        );
-        this._sessionService.ClearSessionState();
+        this.authorizing = false;
+        this.msgBox.ShowMessage('', '', 'user:logout');
+        setTimeout(() => {
+            this._router.navigate(['/membership/login'], { relativeTo: this._route });
+        }, 3000);
     }
 }

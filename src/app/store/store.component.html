@@ -1,14 +1,14 @@
 ﻿<!--
 Copyright (c) 2017 GreenWerx.org.
 Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
--->
+ -->
 <app-messageboxes></app-messageboxes>
- 
+
 <div id="pnlProducts">
-        <p-dataGrid [value]="inventoryItems" [paginator]="true" [rows]="20"   >
-    
+        <p-table [value]="inventoryItems" [paginator]="true" [rows]="20"   >
+         <tr>
+             <td>
             <ng-template let-product pTemplate="item"  >
-<!--                    <div style="padding:3px" class="ui-g-2 ui-md-3"  > -->
                 <div style="padding:3px"   >
                     <p-panel [header]="product.Name" [style]="{'text-align':'center'}">
                         
@@ -33,7 +33,9 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </p-panel>
                 </div>
             </ng-template>
-        </p-dataGrid>
+        </td>
+        </tr>
+        </p-table>
 
         <p-dialog header="Product Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true" width="225" (onAfterHide)="onDialogHide()">
             

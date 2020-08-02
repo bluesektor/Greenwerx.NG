@@ -1,65 +1,61 @@
-﻿// Copyright 2015, 2017 GreenWerx.org.
-// Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
+import {  Injectable, OnInit } from '@angular/core';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
+import { Product } from  '../models/product';
+import {Api} from './api';
+import {Filter} from '../models/filter';
 
-import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
-import { Filter } from '../models/filter';
-import { Screen } from '../models/screen';
 
-@Injectable()
-export class ProductService extends WebApiService {
+@Injectable({
+    providedIn: 'root'
+  })
+export class ProductService {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
-    }
-
+    constructor(private api:Api) { }
+ 
     getProductCategories(filter: Filter) {
-        return this.invokeRequest('GET', 'api/Products/Categories?filter=' + JSON.stringify(filter) , ''    );
-    }
+      return this.api.invokeRequest('GET', 'api/Products/Categories' ,filter    );
+  }
 
-    addProduct(product) {
-        return this.invokeRequest('POST', 'api/Products/Add', JSON.stringify(product));
-    }
+  addProduct(product) {
+      return this.api.invokeRequest('POST', 'api/Products/Add', product);
+  }
 
-    deleteProduct(productUUID) {
-        return this.invokeRequest('DELETE', 'api/Products/Delete/' + productUUID, ''    );
-    }
+  deleteProduct(productUUID) {
+      return this.api.invokeRequest('DELETE', 'api/Products/Delete/' + productUUID, ''    );
+  }
 
-    getProducts(filter: Filter) {
-        return this.invokeRequest('GET', 'api/Products?filter=' + JSON.stringify(filter) );
-    }
+  getProducts(filter: Filter) {
+      return this.api.invokeRequest('POST', 'api/Products' ,filter );
+  }
 
-    getProduct(productId) {
-        return this.invokeRequest('GET', 'api/ProductsBy/' + productId, ''    );
-    }
+  getProduct(productId) {
+      return this.api.invokeRequest('GET', 'api/ProductsBy/' + productId, ''    );
+  }
 
-    getProductDetails(productId, productType) {
-        return this.invokeRequest('GET', 'api/Product/' + productId + '/' + productType + '/Details' , ''    );
-    }
+  getProductDetails(productId, productType) {
+      return this.api.invokeRequest('GET', 'api/Product/' + productId + '/' + productType + '/Details' , ''    );
+  }
 
-    updateProduct(product) {
-        return this.invokeRequest('PATCH', 'api/Products/Update', product);
-    }
-
+  updateProduct(product) {
+      return this.api.invokeRequest('PATCH', 'api/Products/Update', product);
+  }
 
     // ===--- Vendors ---===
     addVendor(vendor) {
-        return this.invokeRequest('POST', 'api/Vendors/Add', JSON.stringify(vendor));
-    }
+      return this.api.invokeRequest('POST', 'api/Vendors/Add', vendor);
+  }
 
-    getVendors(filter?: Filter) {
+  getVendors(filter?: Filter) {
 
-        return this.invokeRequest('GET', 'api/Vendors?filter=' + JSON.stringify(filter), );
-    }
+      return this.api.invokeRequest('GET', 'api/Vendor' ,filter );
+  }
 
-    deleteVendor(vendorUUID) {
-        return this.invokeRequest('DELETE', 'api/Vendors/Delete/' + vendorUUID, ''    );
-    }
+  deleteVendor(vendorUUID) {
+      return this.api.invokeRequest('DELETE', 'api/Vendors/Delete/' + vendorUUID, ''    );
+  }
 
-    updateVendor(vendor) {
-        return this.invokeRequest('PATCH', 'api/Vendors/Update', vendor);
-    }
+  updateVendor(vendor) {
+      return this.api.invokeRequest('PATCH', 'api/Vendors/Update', vendor);
+  }
 }

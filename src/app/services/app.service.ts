@@ -2,142 +2,131 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { AppInfo } from '../models/appinfo';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import {ApiKey} from '../models/apikey';
 
 @Injectable()
-export class AppService  extends WebApiService {
+export class AppService   {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor(private api: Api) {
     }
     addApiKey(apiKey: ApiKey) {
-        return this.invokeRequest('POST', 'api/ApiKeys/Add', JSON.stringify(apiKey));
+        return this.api.invokeRequest('POST', 'api/ApiKeys/Add', apiKey);
     }
 
     getApiKeys(filter: Filter) {
-        return this.invokeRequest('POST', 'api/ApiKeys' , JSON.stringify(filter), );
+        return this.api.invokeRequest('POST', 'api/ApiKeys' , filter);
     }
 
     getApiKey(apiKeyUUID) {
-        return this.invokeRequest('GET', 'api/ApiKeysBy/' + apiKeyUUID, ''    );
+        return this.api.invokeRequest('GET', 'api/ApiKeysBy/' + apiKeyUUID, ''    );
     }
 
     deleteApiKey(apiKeyUUID: string) {
-        return this.invokeRequest('DELETE', 'api/ApiKeys/Delete/' + apiKeyUUID, ''    );
+        return this.api.invokeRequest('DELETE', 'api/ApiKeys/Delete/' + apiKeyUUID, ''    );
     }
 
     updateApiKey(apiKey: ApiKey) {
-        return this.invokeRequest('PATCH', 'api/ApiKeys/Update', JSON.stringify(apiKey));
+        return this.api.invokeRequest('PATCH', 'api/ApiKeys/Update', apiKey);
     }
 
     testIPN(params: string) {
-        return this.invokeRequest('POST', 'api/PayPal/IPN');
+        return this.api.invokeRequest('POST', 'api/PayPal/IPN');
     }
 
     getPublicSettings(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Apps/Public/Settings?filter=' + JSON.stringify(filter) );
+        console.log('app.service.ts  getPublicSettings Api.authToken', Api.authToken);
+        return this.api.invokeRequest('POST', 'api/Apps/Public/Settings' , filter );
     }
 
     getAppStatus() {
-        return this.invokeRequest('GET', 'api/Apps/web/Status' , ''    );
+        return this.api.invokeRequest('GET', 'api/Apps/web/Status' , ''    );
     }
 
-    getDashboard(viewName: string, options: string) {
-
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const reqOptions = new RequestOptions({ headers: headers });
-
+    getDashboard(viewName: string) {
+        
         const url = 'api/Apps/Dashboard/' + viewName;
 
-        return this.invokeRequest('POST', url, options, reqOptions);
+        return this.api.invokeRequest('POST', url);
     }
 
 
     getTemplate(templateName: string, replaceOptions: string) {
 
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
-
         const url = 'api/Apps/Template/' + templateName + '/Replace/' + replaceOptions;
 
-        return this.invokeRequest('GET', url, '', options);
+        return this.api.invokeRequest('GET', url, '');
     }
 
     sendMessage(message) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Site/SendMessage', message, options);
+        return this.api.invokeRequest('POST', 'api/Site/SendMessage', message);
     }
 
     installApp(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Apps/Install', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install', appInfo);
     }
 
     CreateDatabase(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Apps/Install/CreateDatabase', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install/CreateDatabase',  appInfo);
     }
 
     SaveSettings(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Apps/Install/SaveSettings', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install/SaveSettings', appInfo);
     }
     SeedDatabase(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Apps/Install/SeedDatabase', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install/SeedDatabase', appInfo);
     }
     AddAccounts(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
+        
+     
 
-        return this.invokeRequest('POST', 'api/Apps/Install/Accounts', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install/Accounts', appInfo);
     }
     Finalize(appInfo: AppInfo) {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
-
-        return this.invokeRequest('POST', 'api/Apps/Install/Finalize', JSON.stringify( appInfo), options);
+        return this.api.invokeRequest('POST', 'api/Apps/Install/Finalize', appInfo);
     }
     getDefaults(type: string, filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Apps/DefaultData/' + type + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/Apps/DefaultData/' + type ,filter );
     }
 
 
     dataTypes() {
-        return this.invokeRequest('GET', 'api/Apps/DataTypes');
+        return this.api.invokeRequest('GET', 'api/Apps/DataTypes');
 
     }
 
     tableNames() {
-        return this.invokeRequest('GET', 'api/Apps/TableNames');
+        return this.api.invokeRequest('GET', 'api/Apps/TableNames');
     }
 
     scanForDuplicates(tableName: string) {
-        return this.invokeRequest('GET', 'api/App/Tables/ScanNames/' + tableName);
+        return this.api.invokeRequest('GET', 'api/App/Tables/ScanNames/' + tableName);
     }
 
     searchTables(name: string, values: string[]) {
-        return this.invokeRequest('POST', 'api/App/Tables/Search/' + name, JSON.stringify(values) );
+        return this.api.invokeRequest('POST', 'api/App/Tables/Search/' + name, values);
     }
 
     deleteItem(table: string, uuid: string) {
-        return this.invokeRequest('DELETE', 'api/Apps/Tables/' + table + '/DeleteItem/' + uuid);
+        return this.api.invokeRequest('DELETE', 'api/Apps/Tables/' + table + '/DeleteItem/' + uuid);
     }
 }

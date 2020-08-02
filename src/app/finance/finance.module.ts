@@ -5,24 +5,22 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 import { MessageBoxesModule } from '../common/messageboxes.module';
-import { CheckboxModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
 
 import {
-    DataTableModule, SharedModule, DialogModule, AccordionModule, DropdownModule,
+     TableModule, SharedModule, DialogModule, AccordionModule, DropdownModule,
     InputSwitchModule, FileUploadModule, AutoCompleteModule, CalendarModule
-} from 'primeng/primeng';
+} from 'primeng';
 import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.service';
 
-import { CommontmModule } from '../common/commontm.module';
+import { CommonModuleEx } from '../common/common.moduleEx';
 import { CurrencyComponent } from './currency.component';
 import { PriceRulesComponent } from './pricerules.component';
 import { FinanceAccountsComponent } from './financeaccounts.component';
 import { FinanceAccountTransactionsComponent } from './financeaccounttransactions.component';
 import { PayPalComponent } from './gateways/paypal.component';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 
 import { FinanceService } from '../services/finance.service';
 import { FinanceRoutingModule } from './finance.routing';
@@ -32,10 +30,9 @@ import { FinanceRoutingModule } from './finance.routing';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule,
+        CommonModule,
         CheckboxModule,
-        DataTableModule,
+        TableModule,
         AccordionModule,
         SharedModule,
         DialogModule,
@@ -63,12 +60,6 @@ import { FinanceRoutingModule } from './finance.routing';
         FinanceAccountTransactionsComponent,
         PayPalComponent
     ],
-    providers: [
-        FinanceService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService
-    ]
 })
 export class FinanceModule {
 

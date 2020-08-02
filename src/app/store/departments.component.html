@@ -3,21 +3,33 @@ Copyright (c) 2017 GreenWerx.org.
 Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 -->
 <app-messageboxes></app-messageboxes>
-<p-dataTable [value]="categories"
+<h4>Store Departments</h4>
+<p-table [value]="categories"
              selectionMode="single"
              [(selection)]="category"
              (onRowSelect)="onRowSelect($event)" [paginator]="true" rows="15" [responsive]="true">
-    <p-header>Store Departments</p-header>
-    <p-column field="Name" header="Name" [sortable]="true"></p-column>
-    <p-footer>
+    
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Name</th>
+        </tr>
+     </ng-template>
+
+     <ng-template pTemplate="body" let-category>
+        <tr>
+            <td>{{category.Name}}</td>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
         <div class="ui-helper-clearfix" style="width:25%">
             <button type="button" class="form-control input-sm" value="Add"
                     (click)="showDialogToAdd()" label="Add">
                 <i class="fa fa-plus" style="color:green;"></i> Add
             </button>
         </div>
-    </p-footer>
-</p-dataTable>
+    </ng-template>
+</p-table>
 
 <!--Dialog for  crud actions -->
 <p-dialog header="Category Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">

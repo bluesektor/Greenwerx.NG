@@ -4,7 +4,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 -->
 <br />
 <app-messageboxes></app-messageboxes>
-<p-dataTable [value]="settings"
+<h4>Settings</h4>
+<p-table [value]="settings"
              selectionMode="single"
              [(selection)]="setting"
              (onRowSelect)="onRowSelect($event)" 
@@ -14,22 +15,35 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
              [paginator]="true"
               rows="25" 
              [responsive]="true">
-    <p-header>Settings</p-header>
-    <p-column field="Name" header="Name" [sortable]="true"></p-column>
-    <p-column field="Value" header="Value" [sortable]="true"></p-column>
-    <p-column field="Type" header="Type" [sortable]="true"></p-column>
-    <p-column field="AppType" header="App. Type" [sortable]="true"></p-column>
-    <p-column field="RoleWeight" header="Role Weight" [sortable]="true"></p-column>
-    <p-column field="RoleOperation" header="Role Operation" [sortable]="true"></p-column>
-    <p-footer>
-        <div class="ui-helper-clearfix" style="width:25%">
-            <button type="button" class="form-control input-sm" value="Add"
-                    (click)="showDialogToAdd()" label="Add">
-                <i class="fa fa-plus" style="color:green;"></i> Add
-            </button>
-        </div>
-    </p-footer>
-</p-dataTable>
+             <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                    <th>Type</th>
+                    <th>AppType</th>
+                    <th>RoleWeight</th>
+                    <th>RoleOperation</th>
+                </tr>
+             </ng-template>
+             <ng-template pTemplate="body" let-setting>
+                <tr>
+                    <td>{{setting.Name}}</td>
+                    <td>{{setting.Value}}</td>
+                    <td>{{setting.Type}}</td>
+                    <td>{{setting.AppType}}</td>
+                    <td>{{setting.RoleWeight}}</td>
+                    <td>{{setting.RoleOperation}}</td>
+                </tr>
+            </ng-template>
+            <div class="ui-helper-clearfix" style="width:25%">
+                <button type="button" class="form-control input-sm" value="Add"
+                        (click)="showDialogToAdd()" label="Add">
+                    <i class="fa fa-plus" style="color:green;"></i> Add
+                </button>
+            </div>
+            <ng-template pTemplate="footer">
+            </ng-template>
+</p-table>
 
 <!--Dialog for  crud actions -->
 <p-dialog header="Setting Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">

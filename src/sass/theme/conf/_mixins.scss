@@ -112,6 +112,6 @@
     color: $color;
   }
   .feed-message .message-time, .text-muted {
-    color: darken($color, 20);
+    color: darken($color);
   }
 }

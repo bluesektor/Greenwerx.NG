@@ -8,24 +8,24 @@ import {
     ReactiveFormsModule
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
+
 
 import { KeysComponent } from './keys.component';
-// import { AccountService } from '../../services/account.service';
+// import { AccountService } from '../../services/user/account.service';
 import { PreventUnsavedChangesGuard } from '../../prevent-unsaved-changes-guard.service';
-import { CommontmModule  } from '../../common/commontm.module';
+import { CommonModuleEx  } from '../../common/common.moduleex';
 import { MessageBoxesModule } from '../../common/messageboxes.module';
 import { GraphsModule } from '../../common/graphs.module';
-import { SessionService } from '../../services/session.service';
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
+import { SessionService } from '../../services/user/session.service';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
 
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 import { APIRoutingModule} from './api.routing';
 import { APIComponent } from './api.component';
 
-import { DataTableModule, SharedModule, DialogModule, DataGridModule, StepsModule, AutoCompleteModule} from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule,    StepsModule, AutoCompleteModule} from 'primeng';
 
 
 @NgModule({
@@ -33,17 +33,17 @@ import { DataTableModule, SharedModule, DialogModule, DataGridModule, StepsModul
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule ,
+        
+        CommonModuleEx ,
         RouterModule,
         AccordionModule,
         CheckboxModule,
         PickListModule,
         ConfirmDialogModule,
-        GrowlModule,
+         
         APIRoutingModule,
         MessageBoxesModule,
-        DataTableModule,
+        TableModule,
         DialogModule,
         GraphsModule
     ]
@@ -56,12 +56,6 @@ import { DataTableModule, SharedModule, DialogModule, DataGridModule, StepsModul
         KeysComponent,
         APIComponent
     ],
-    providers: [
-        // ApiKeyService,
-        PreventUnsavedChangesGuard,
-        SessionService,
-        ConfirmationService
-    ]
 })
 export class APIModule {
 

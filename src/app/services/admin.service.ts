@@ -1,66 +1,65 @@
-﻿// Copyright 2015, 2017 GreenWerx.org.
+// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import 'rxjs/operators';
+import { Api } from './api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 @Injectable()
-export class AdminService extends WebApiService {
+export class AdminService   {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor( private api: Api ) {
+  
     }
 
     addSetting(setting) {
-        return this.invokeRequest('POST', 'api/Apps/Settings/Add', JSON.stringify(setting));
+        return this.api.invokeRequest('POST', 'api/Apps/Settings/Add',  setting);
     }
 
     deleteSetting(settingUUID) {
-        return this.invokeRequest('DELETE', 'api/Apps/Settings/Delete/' + settingUUID, ''    );
+        return this.api.invokeRequest('DELETE', 'api/Apps/Settings/Delete/' + settingUUID, ''    );
     }
 
     getSettings(filter?: Filter) {
 
-        return this.invokeRequest('GET', 'api/Apps/Settings?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/Apps/Settings',filter);
     }
 
     getSetting(settingId) {
-        return this.invokeRequest('GET', 'api/Apps/Settings/' + settingId, ''    );
+        return this.api.invokeRequest('GET', 'api/Apps/Settings/' + settingId, ''    );
     }
 
     updateSetting(setting) {
-        return this.invokeRequest('PATCH', 'api/Apps/Settings/Update', setting);
+        return this.api.invokeRequest('PATCH', 'api/Apps/Settings/Update', setting);
     }
 
     getToolsDashboard() {
-        return this.invokeRequest('GET', 'api/Tools/Dashboard');
+        return this.api.invokeRequest('GET', 'api/Tools/Dashboard');
     }
 
     backupDatabase() {
-        return this.invokeRequest('GET', 'api/Tools/Database/Backup');
+        return this.api.invokeRequest('GET', 'api/Tools/Database/Backup');
     }
 
     restoreDatabase(backupFiles: string) {
-        return this.invokeRequest('GET', 'api/Tools/Database/Restore', backupFiles);
+        return this.api.invokeRequest('GET', 'api/Tools/Database/Restore', backupFiles);
     }
 
 
     cipherText(text: string, encrypt: boolean) {
         if ( encrypt === true) {
-            return this.invokeRequest('GET', encodeURIComponent('api/Tools/Cipher/' + text + '/Encrypt/' + encrypt) );
+            return this.api.invokeRequest('GET', encodeURIComponent('api/Tools/Cipher/' + text + '/Encrypt/' + encrypt) );
         }
-        return this.invokeRequest('GET', 'api/Tools/Cipher/' + text + '/Encrypt/' + encrypt );
+        return this.api.invokeRequest('GET', 'api/Tools/Cipher/' + text + '/Encrypt/' + encrypt );
     }
 
     import(type: string) {
-        return this.invokeRequest('GET', '/api/Tools/Import/' + type);
+        return this.api.invokeRequest('GET', '/api/Tools/Import/' + type);
     }
 
     testCode() {
-        return this.invokeRequest('GET', '/api/Tools/TestCode' );
+        return this.api.invokeRequest('GET', '/api/Tools/TestCode' );
     }
 }

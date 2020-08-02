@@ -3,14 +3,16 @@
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PickListModule } from 'primeng/primeng';
+import { PickListModule } from 'primeng';
 
  import { MessageBoxesComponent } from './messageboxes.component';
-
+ import { SimpleNotificationsModule } from 'angular2-notifications';
 
 @NgModule({
     imports: [
-        CommonModule
+        CommonModule,
+        
+     SimpleNotificationsModule.forRoot()
   ],
     declarations: [
         MessageBoxesComponent

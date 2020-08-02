@@ -16,13 +16,13 @@ import { OrdersComponent } from './orders.component';
 const storeRoutes: Routes = [
     { path: 'departments', component: DepartmentsComponent },
     { path: 'categories', component: StoreCategoriesComponent },
-    { path: 'products', component: ProductsComponent },
     { path: 'orders', component: OrdersComponent },
     { path: 'inventory', component: StoreInventoryComponent },
     { path: 'shoppingcart', component: CartDetailComponent },
     { path: 'checkout', component: CheckOutComponent },
     { path: 'payoptions', component: PayOptionsComponent },
     { path: 'store',          component: StoreComponent 	},
+    { path: 'products', component: ProductsComponent },
     { path: '', component: StoreComponent }
 ];
 

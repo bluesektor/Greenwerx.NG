@@ -7,12 +7,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
 import { BasicValidators } from '../../common/basicValidators';
-import { AccountService } from '../../services/account.service';
-import { SessionService } from '../../services/session.service';
+import { AccountService } from '../../services/user/account.service';
+import { SessionService } from '../../services/user/session.service';
 import { Account } from '../../models/account';
 
 @Component({
-    templateUrl: './account.component.html'
+    templateUrl: './account.component.html',
+
 })
 export class AccountComponent implements OnInit {
 
@@ -22,10 +23,7 @@ export class AccountComponent implements OnInit {
     account = new Account();
     testMessage: string;
     savingData = false;
-
-
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+ 
     constructor(
         fb: FormBuilder,
         private _router: Router,
@@ -34,7 +32,7 @@ export class AccountComponent implements OnInit {
         private _sessionService: SessionService
         ) {
 
-        if (this._sessionService.CurrentSession.validSession) {
+        if (this._sessionService.CurrentSession.ValidSession) {
 
             this.form = fb.group({
                 name: ['', Validators.required],
@@ -49,7 +47,7 @@ export class AccountComponent implements OnInit {
                 password: ['', Validators.compose([
                     Validators.required
                 ])],
-                confirmPassword: ['', Validators.required],
+                ConfirmPassword: ['', Validators.required],
                 PasswordQuestion: ['', Validators.required],
                 PasswordAnswer: ['', Validators.required],
 
@@ -59,10 +57,10 @@ export class AccountComponent implements OnInit {
 
     ngOnInit() {
 
-        this.title = this._sessionService.CurrentSession.validSession ? 'Edit Account' : 'New Account';
-        this.newAccount = this._sessionService.CurrentSession.validSession ? false : true;
+        this.title = this._sessionService.CurrentSession.ValidSession ? 'Edit Account' : 'New Account';
+        this.newAccount = this._sessionService.CurrentSession.ValidSession ? false : true;
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
 

@@ -1,45 +1,89 @@
-﻿// Copyright 2015, 2017 GreenWerx.org.
-// Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
+// Copyright 2015, 2017 GreenWerx.org.
+// Licensed under CPAL 1.0,  See license.txt  or go to https://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from './api';
 import { Filter } from '../models/filter';
-import { Screen } from '../models/screen';
 import { InventoryItem } from '../models/inventory';
 
-@Injectable()
-export class InventoryService     extends WebApiService {
+@Injectable({
+    providedIn: 'root'
+  })
+export class InventoryService      {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
-    }
-
+    constructor(private api: Api) {    }
     addToInventory(inventoryItem) {
-        return this.invokeRequest('POST', 'api/Inventory/Add', JSON.stringify(inventoryItem));
+        return this.api.invokeRequest('POST', 'api/Inventory/Add', inventoryItem);
     }
 
-    uploadImage(image) {
-        return this.invokeRequest('POST', 'api/upload', image);
+    deleteImage(inventoryItemUUID: string, fileName: string) {
+          return this.api.invokeRequest('DELETE', 'api/Inventory/Delete/' + inventoryItemUUID + '/File/' + fileName);
+    }
+
+    deleteItem(inventoryItemUUID: string) {
+        return this.api.invokeRequest('DELETE', 'api/Inventory/Delete/' + inventoryItemUUID);
+     }
+
+    getDetails(itemUUID: string) {
+        return this.api.invokeRequest('GET', 'api/Item/' + itemUUID + '/Details' );
+    }
+
+    getImages(itemUUID: string) {
+        return this.api.invokeRequest('GET', 'api/Inventory/' + itemUUID + '/Images' );
     }
 
     getInventory(locationUUID: string,   filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Inventory/Location/' + locationUUID + '?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('POST', 'api/Inventory/Location/' + locationUUID , filter);
+    }
+
+    getPublishedInventory(filter?: Filter) {
+       return this.api.invokeRequest('POST', 'api/Inventory/Published', filter);
+   }
+
+    getPublishedInventoryByLocation(locationName: string, distance: number, filter?: Filter) {
+        if (locationName === '' || locationName === null || locationName === undefined) {
+            return this.getPublishedInventory(filter);
+        }
+        return this.api.invokeRequest('POST', 'apInventory/' + locationName + '/distance/' + distance, filter);
     }
 
     // This is different from getInvetory in that it returns published items.
     //
     getStoreInventory(filter?: Filter) {
-        return this.invokeRequest('GET', 'api/Store');
+        return this.api.invokeRequest('POST', 'api/Store', filter );
+    }
+    getUserInventory(userUUID: string,  filter?: Filter) {
+        return this.api.invokeRequest('POST', 'api/Inventory/User/' + userUUID , filter );
     }
 
-    updateInventory(inventoryItems: InventoryItem[]) {
-        return this.invokeRequest('PATCH', 'api/Inventory/Updates', JSON.stringify(inventoryItems));
+    publishItem(itemUUID: string) {
+        return this.api.invokeRequest('PATCH', 'api/Inventory/Publish/' + itemUUID );
     }
 
-    deleteItem(inventoryItemUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Inventory/Delete/' + inventoryItemUUID);
-     }
+    searchPublishedInventory(locationName: string, distance: number, filter?: Filter) {
+         if (!locationName || locationName === '') {
+             locationName = ' ';
+         }
+        return this.api.invokeRequest('POST', 'api/Inventory/' + locationName + '/distance/' + distance + '/search',
+       filter);
+    }
+
+    updateItem(inventoryItem: InventoryItem) {
+        return this.api.invokeRequest('PATCH', 'api/Inventory/Update', inventoryItem);
+    }
+
+    updateItems(inventoryItems: InventoryItem[]) {
+        return this.api.invokeRequest('PATCH', 'api/Inventory/Updates', inventoryItems);
+    }
+
+    uploadFileEx( files: File[], accountUUID: string, type: string) {
+        return this.api.uploadFile( '/api/file/upload/' + accountUUID + '/' + type, files);
+    }
+
+    uploadFormEx( form: FormData, UUID: string, type: string) {
+         return this.api.uploadForm( '/api/file/upload/' + UUID + '/' + type, form); }
+
+    uploadImage(image) {
+        return this.api.invokeRequest('POST', 'api/upload', image);
+    }
 }

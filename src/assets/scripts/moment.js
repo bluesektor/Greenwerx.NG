@@ -763,7 +763,7 @@ addParseToken('YY', function (input, array) {
     array[YEAR] = hooks.parseTwoDigitYear(input);
 });
 addParseToken('Y', function (input, array) {
-    array[YEAR] = parseInt(input, 10);
+    array[YEAR] = parseInt(input);
 });
 
 // HELPERS
@@ -1349,7 +1349,7 @@ function parseWeekday(input, locale) {
     }
 
     if (!isNaN(input)) {
-        return parseInt(input, 10);
+        return parseInt(input);
     }
 
     input = locale.weekdaysParse(input);
@@ -2266,7 +2266,7 @@ function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr
 }
 
 function untruncateYear(yearStr) {
-    var year = parseInt(yearStr, 10);
+    var year = parseInt(yearStr);
     if (year <= 49) {
         return 2000 + year;
     } else if (year <= 999) {
@@ -2314,7 +2314,7 @@ function calculateOffset(obsOffset, militaryOffset, numOffset) {
         // the only allowed military tz is Z
         return 0;
     } else {
-        var hm = parseInt(numOffset, 10);
+        var hm = parseInt(numOffset);
         var m = hm % 100, h = (hm - m) / 100;
         return h * 60 + m;
     }
@@ -2534,7 +2534,7 @@ function configFromObject(config) {
 
     var i = normalizeObjectUnits(config._i);
     config._a = map([i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond], function (obj) {
-        return obj && parseInt(obj, 10);
+        return obj && parseInt(obj);
     });
 
     configFromArray(config);
@@ -2594,7 +2594,7 @@ function configFromInput(config) {
         configFromString(config);
     } else if (isArray(input)) {
         config._a = map(input.slice(0), function (obj) {
-            return parseInt(obj, 10);
+            return parseInt(obj);
         });
         configFromArray(config);
     } else if (isObject(input)) {
@@ -3742,7 +3742,7 @@ addUnitAlias('second', 's');
 
 // PRIORITY
 
-addUnitPriority('second', 15);
+addUnitPriority('second');
 
 // PARSING
 

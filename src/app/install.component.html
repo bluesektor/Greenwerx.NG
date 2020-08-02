@@ -3,16 +3,18 @@ Copyright (c) 2017 GreenWerx.org.
 Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 -->
 <h4>Installing GreenWerx web application.</h4>
-  <app-messageboxes></app-messageboxes>
+      <app-messageboxes></app-messageboxes>
 
 <p-steps [model]="items" [(activeIndex)]="activeIndex" [readonly]="false"></p-steps>
 
 <form id="formAppSettings" name="formAppSettings"  [formGroup]="formAppSettings"   >
+
     <div  *ngIf="activeIndex == 0" class="step-pane active" id="step1">
         <div id="pnlSiteDomain" class="form-group">
             <label class="control-label" for="SiteDomain">Domain Name</label>
             <input type="text" required  [(ngModel)]="_appInfo.SiteDomain"  #SiteDomain formControlName="SiteDomain" id="SiteDomain" name="SiteDomain"  class="input-sm form-control">
         </div>
+       
         <select [(ngModel)]="_appInfo.ActiveDbProvider"  #ActiveDbProvider formControlName="ActiveDbProvider"
                 (ngModelChange)="cboDbProviderChange($event)" class="form-control input-sm" id="cboProviders" name="cboProviders" >
             <option value='' >Select provider...</option>
@@ -35,16 +37,18 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             <label class="control-label" for="ActiveDbPassword">Database Password:</label>
             <input type="password" required [(ngModel)]="_appInfo.ActiveDbPassword" #ActiveDbUser formControlName="ActiveDbPassword" id="ActiveDbPassword" name="ActiveDbPassword" class="input-sm form-control">
         </div>
-        <div>
-            <p-checkbox [(ngModel)]="seedDatabase" label="Seed Database" binary="seedDatabase"  [ngModelOptions]="{standalone: true}" ></p-checkbox>
+         <div>
+            <input type="checkbox" [(ngModel)]="seedDatabase" formGroupName="SeedDatabase"  formControlName="SeedDatabase" id="SeedDatabase"   name="SeedDatabase"> Seed Database
         </div>
         <br/>
-        <div>
+         <div>
             <button   *ngIf="!processingRequest"  (click)="CreateDatabase()" id="bntCreateDatabase"  type="button" class="btn btn-success"   >Create Database</button>
             <div *ngIf="processingRequest" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
         </div>
         <br />
+     
     </div>
+ 
    <div  *ngIf="activeIndex == 1" class="step-pane" id="step2">
         <fieldset name="accountTab">
             <h4>Site Manager</h4>
@@ -90,16 +94,14 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
     <br/>
     <div *ngIf="activeIndex == 2" class="step-pane" id="step3">
         <label>Taking out the trash and cleaning the windows...</label>
-        <!--
-        <div id="pnlFinalizeInstall">
-            <button   *ngIf="activeIndex == maxSteps && !processingRequest"  (click)="Finalize()" id="btnFinalize"  type="button" class="btn btn-success"   >Finalize Install</button>
-            <div *ngIf="processingRequest" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
-        </div>
-    -->
+    
         <br />
     </div>
+ 
 </form>
 <div class="actions m-t">
     <button *ngIf="activeIndex > 0 && !processingRequest" id="btnPrevInstall" (click)="onClickBackStep()" type="button" class="btn btn-primary btn-prev"  >Back</button>
     <button   *ngIf="enableNext == true && activeIndex < maxSteps && !processingRequest" (click)="onClickNextStep()" id="btnNextInstall" type="button" class="btn btn-primary btn-next"   >Next</button>
 </div>
+
+ 

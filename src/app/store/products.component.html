@@ -35,7 +35,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 <br />
         </div>
         <div class="row">
-            <p-dataTable [value]="products"
+            <h4>Products</h4>
+            <p-table [value]="products"
                          selectionMode="single"
                          [(selection)]="product"
                          (onRowSelect)="onRowSelect($event)" 
@@ -47,18 +48,25 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                           (onLazyLoad) = "lazyLoadProductsList($event)"   
                           [totalRecords] = "totalRecords"
                          >
-                <p-header>Products</p-header>
-                <p-column field="Name" header="Name" [sortable]="true"></p-column>
-
-                <p-footer>
-                    <div class="ui-helper-clearfix" style="width:25%">
-                        <button type="button" class="form-control input-sm" value="Add"
-                                (click)="showDialogToAdd()" label="Add">
-                            <i class="fa fa-plus" style="color:green;"></i> Add
-                        </button>
-                    </div>
-                </p-footer>
-            </p-dataTable>
+                         <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                         </ng-template>
+                         <ng-template pTemplate="body" let-product>
+                            <tr>
+                                <td>{{product.Name}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <div class="ui-helper-clearfix" style="width:25%">
+                                <button type="button" class="form-control input-sm" value="Add"
+                                        (click)="showDialogToAdd()" label="Add">
+                                    <i class="fa fa-plus" style="color:green;"></i> Add
+                                </button>
+                            </div>
+                        </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Product Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -79,24 +87,43 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         <p-accordionTab header="Details">
                                     <div class="form-group" style="z-index:9050!important;">
                                         <label for="cboStrains">Strain:{{selectedStrainName}}</label>
+                                            <p-dropdown [options]="strainOptions"  appendTo="body"
+                                            (onSelect)="onSelectStrain($event)"
+                                                [style]="{'width':'100%'}">
+                                            </p-dropdown>
+                                                <!--
+                                                    
+                                            (onChange)="onSelectStrain($event )"
+                                            (onBlur)="onCboLeaveAssetClass($event )"
+                                            [options]="assetClassOptions"
+                                            [(ngModel)]="currency.AssetClass"
+                                            [style]="{'width':'150px' }"
+                                            editable="true"
+                                            placeholder="Select Asset Class"
+                                                -->
+
+
+                                          <!--        todo re-implement
                                         <p-autoComplete   [suggestions]="strains" field="Name"
                                                         (completeMethod)="onSearchStrains($event)" [size]="30"
                                                         [minLength]="1" placeholder="Hint: type 'v' or 'f'" [dropdown]="true"
                                                         (onDropdownClick)="handleStrainsDropdownClick($event)"
                                                         (onSelect)="onSelectStrain($event)">
                                         </p-autoComplete>
+                                          -->
                                     </div>
                                     <!--see strains breeders-->
-                                   <div class="form-group" style="z-index:9050!important;">
-                                        <label for="Manufacturer">Manufacturer:{{selectedManufacturerName}}</label>
-                                       <p-autoComplete 
-                                                       [suggestions]="filteredAccounts" 
-                                                       field="Name"  
-                                                       (completeMethod)="filterAccounts($event)" [size]="30"
-                                                       [minLength]="1" placeholder="Hint: type 'v' or 'f'" [dropdown]="true" 
-                                                       (onDropdownClick)="handleAccountDropdownClick($event)"
-                                                       (onSelect)="onSelectAccount($event)">
+                                  
+                                    <div>
+                                        <p-autoComplete 
+                                            [suggestions]="filteredAccounts" 
+                                            field="Name"  
+                                            (completeMethod)="filterAccounts($event)" [size]="30"
+                                            [minLength]="1" placeholder="Hint: type 'v' or 'f'" [dropdown]="true" 
+                                            (onDropdownClick)="handleAccountDropdownClick($event)"
+                                            (onSelect)="onSelectAccount($event)">
                                        </p-autoComplete>
+                                  
                                    </div>
                         </p-accordionTab>
                         <p-accordionTab header="Display">

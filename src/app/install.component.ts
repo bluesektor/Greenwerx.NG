@@ -4,18 +4,45 @@
 import { Component, ViewEncapsulation, OnInit, ViewChild, Output, EventEmitter  } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { MessageBoxesComponent } from './common/messageboxes.component';
-import { StepsModule, MenuItem, CheckboxModule } from 'primeng/primeng';
+import { StepsModule, MenuItem, CheckboxModule } from 'primeng';
 import { AppInfo } from './models/appinfo';
 import { AppService } from './services/app.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
+    selector: 'page-install',
     templateUrl: './install.component.html',
-    styleUrls: [
-         './install.component.css'
-    ],
+   
+        styles: [`
+        .ui-steps .ui-steps-item {
+            width: 25%;
+        }
+
+        .ui-steps.steps-custom {
+            margin-bottom: 30px;
+        }
+
+        .ui-steps.steps-custom .ui-steps-item .ui-menuitem-link {
+            padding: 0 1em;
+            overflow: visible;
+        }
+
+        .ui-steps.steps-custom .ui-steps-item .ui-steps-number {
+            background-color: #0081c2;
+            color: #FFFFFF;
+            display: inline-block;
+            width: 36px;
+            border-radius: 50%;
+            margin-top: -14px;
+            margin-bottom: 10px;
+        }
+
+        .ui-steps.steps-custom .ui-steps-item .ui-steps-title {
+            color: #555555;
+        }
+    `]
+    ,
     encapsulation: ViewEncapsulation.None,
-    providers: [AppService]
 
 })
 
@@ -32,12 +59,11 @@ export class InstallComponent implements OnInit {
     showDbCredentials = false;
     processingRequest = false;
     private _appStatus: string;
-
+    
 
     public items: MenuItem[];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-    private _appInfo: AppInfo = new AppInfo();
+    public _appInfo: AppInfo = new AppInfo();
 
     public dynamicControlDatabaseServer: FormControl = new FormControl('', [this.ValidateData.bind(this)]);
     public dynamicControlActiveDatabase: FormControl = new FormControl('', [this.ValidateData.bind(this)]);
@@ -57,7 +83,8 @@ export class InstallComponent implements OnInit {
     constructor(fb: FormBuilder,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _appService: AppService
+        private _appService: AppService,
+        private msgBox:MessageBoxesComponent
     ) {
         this.formAppSettings = fb.group({
             SiteDomain: ['', Validators.required],
@@ -71,7 +98,8 @@ export class InstallComponent implements OnInit {
             UserPassword: '',
             ConfirmPassword: '',
             SecurityQuestion: '',
-            UserSecurityAnswer: ''
+            UserSecurityAnswer: '',
+            SeedDatabase:false
         });
 
         this._appInfo.AccountEmail = '';
@@ -181,39 +209,39 @@ export class InstallComponent implements OnInit {
 
     CreateDatabase() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
             return;
         }
         this.processingRequest = true;
         this._appService.CreateDatabase(this._appInfo).subscribe(response => {
                    this.processingRequest = false;
                    if (response.Code !== 200) {
-                       this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                       this.msgBox.ShowMessage(response.Status, response.Message, );
                        return;
                    }
-                   this.msgBox.ShowMessage('info', 'Database created, saving settings..', 15);
+                   this.msgBox.ShowMessage('info', 'Database created, saving settings..');
                    this._appInfo.Command = 'SaveSettings';
                    this.SaveSettings();
                }, err => {
                    this.processingRequest = false;
-                   this.msgBox.ShowResponseMessage(err.status, 9999999);
+                   this.msgBox.ShowResponseMessage(err.status);
                    return false;
                });
     }
 
     SaveSettings() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
             return;
         }
         this.processingRequest = true;
         this._appService.SaveSettings(this._appInfo).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                this.msgBox.ShowMessage(response.Status, response.Message, );
                 return;
             }
-            this.msgBox.ShowMessage('info', 'Settings saved..', 15);
+            this.msgBox.ShowMessage('info', 'Settings saved..');
             if ( this.seedDatabase === true ) {
                 this._appInfo.Command = 'SeedDatabase';
                 this.SeedDatabase();
@@ -224,38 +252,38 @@ export class InstallComponent implements OnInit {
             }
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 9999999);
+            this.msgBox.ShowResponseMessage(err.status);
             return;
         });
     }
 
     SeedDatabase() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
             return;
         }
         this.processingRequest = true;
-        this.msgBox.ShowMessage('info', 'Seeding the datbase it may take a while...', 15);
+        this.msgBox.ShowMessage('info', 'Seeding the datbase it may take a while...');
         this._appService.SeedDatabase(this._appInfo).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                this.msgBox.ShowMessage(response.Status, response.Message, );
                 return;
             }
-            this.msgBox.ShowMessage('info', 'Seeding datbase completed.', 15);
+            this.msgBox.ShowMessage('info', 'Seeding datbase completed.');
             this._appInfo.Command = 'Accounts';
             this.activeIndex = 1;
            this.enableNext = false;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 9999999);
+            this.msgBox.ShowResponseMessage(err.status);
             return;
         });
     }
 
     CreateAccounts() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
             return;
         }
         this.processingRequest = true;
@@ -263,34 +291,34 @@ export class InstallComponent implements OnInit {
             this.enableNext = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                this.msgBox.ShowMessage(response.Status, response.Message, );
                 return;
             }
-            this.msgBox.ShowMessage('info', 'Accounts created, finalize the settings.', 15);
+            this.msgBox.ShowMessage('info', 'Accounts created, finalize the settings.');
             this._appInfo.Command = 'Finalize';
             this.activeIndex = 2;
             this.enableNext = true;
             this.Finalize();
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 9999999);
+            this.msgBox.ShowResponseMessage(err.status);
             return;
         });
     }
 
     Finalize() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
             return;
         }
         this.processingRequest = true;
         this._appService.Finalize(this._appInfo).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                this.msgBox.ShowMessage(response.Status, response.Message, );
                 return;
             }
-            this.msgBox.ShowMessage('info', 'Install completed, you will be redirected to the login..', 15);
+            this.msgBox.ShowMessage('info', 'Install completed, you will be redirected to the login..');
             setTimeout(() => {
                 this._router.navigate(['/membership/login'], { relativeTo: this._route });
 
@@ -298,14 +326,14 @@ export class InstallComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 9999999);
+            this.msgBox.ShowResponseMessage(err.status);
             return;
         });
     }
 
     onClickNextStep() {
         if ( this.processingRequest === true) {
-            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command, 10 );
+            this.msgBox.ShowMessage('info', 'Already processing: ' + this._appInfo.Command);
         }
         this.processingRequest = true;
         this.msgBox.closeMessageBox();
@@ -363,17 +391,17 @@ export class InstallComponent implements OnInit {
 
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 9999999);
+                this.msgBox.ShowMessage(response.Status, response.Message, );
                 return false;
             }
-            this.msgBox.ShowMessage('ok', 'Your site has finished installing, you will be redirected to the login.', 10    );
+            this.msgBox.ShowMessage('ok', 'Your site has finished installing, you will be redirected to the login.');
             setTimeout(() => {
                 this._router.navigate(['/membership/login'], { relativeTo: this._route });
             }, 3000);
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 9999999);
+            this.msgBox.ShowResponseMessage(err.status);
 
         });
 
@@ -394,7 +422,7 @@ export class InstallComponent implements OnInit {
                 this.processingRequest = false;
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this._appStatus = response.Result;
@@ -404,7 +432,7 @@ export class InstallComponent implements OnInit {
             }
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
 

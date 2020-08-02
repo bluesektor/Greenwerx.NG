@@ -28,7 +28,7 @@
                                     </div>
                                     <div *ngIf="newUser" id="pnlUserPassword" class="form-group">
                                         <label class="control-label" for="password">Password</label>
-                                        <input [(ngModel)]="user.password" #password formControlName="password" type="password" required id="password" name="password" class="input-sm form-control">
+                                        <input [(ngModel)]="user.Password" #password formControlName="password" type="password" required id="password" name="password" class="input-sm form-control">
                                         <div *ngIf="form.controls.password.touched && !form.controls.password.valid" class="alert alert-danger">
                                             Please type a valid password.
                                         </div>
@@ -40,14 +40,14 @@
                                     </div>
                                     <div *ngIf="newUser" id="pnlUserPasswordConfirm" class="form-group">
                                         <label class="control-label" for="UserPasswordConfirm">Confirm Password</label>
-                                        <input [(ngModel)]="user.confirmPassword"  #confirmPassword formControlName="confirmPassword" required type="password" id="confirmPassword" name="confirmPassword" class="input-sm form-control">
-                                        <div *ngIf="form.controls.confirmPassword.touched && !form.controls.confirmPassword.valid" class="alert alert-danger">
+                                        <input [(ngModel)]="user.ConfirmPassword"  #ConfirmPassword formControlName="ConfirmPassword" required type="password" id="ConfirmPassword" name="ConfirmPassword" class="input-sm form-control">
+                                        <div *ngIf="form.controls.ConfirmPassword.touched && !form.controls.ConfirmPassword.valid" class="alert alert-danger">
                                             Please confirm password.
                                         </div>
                                         <!--Note that here I'm checking for form.errors.passwordShouldMatch
                                             because this validation is applied at the form itself.-->
 
-                                        <div *ngIf="form.controls.confirmPassword.touched && form.errors && form.errors.passwordsShouldMatch"
+                                        <div *ngIf="form.controls.ConfirmPassword.touched && form.errors && form.errors.passwordsShouldMatch"
                                              class="alert alert-danger">
                                             Passwords don't match.
                                         </div>

@@ -6,16 +6,16 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
 import { BasicValidators } from '../../common/basicValidators';
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { PickListComponent } from '../../common/picklist.component';
 import { Filter } from '../../models/filter';
 import { Screen } from '../../models/screen';
 
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
 
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 
 import { RoleService } from '../../services/roles.service';
 import { Role } from '../../models/role';
@@ -46,7 +46,6 @@ import { Role } from '../../models/role';
    // if you want to hide the side buttons for the picklist
    // you need to include this (along with the css above).
     encapsulation: ViewEncapsulation.None,
-    providers: [RoleService, ConfirmationService, SessionService]
 
 })
 export class RolesComponent implements OnInit {
@@ -54,12 +53,13 @@ export class RolesComponent implements OnInit {
     loadingData = false;
     deletingData = false;
     selectedTab = 0;
+    SearchTerm: string;
 
      // ===--- Top Menu Bar ---===
      newRole = false;
      roles: any[];
      msgs: any[] = [];
-
+     activeRole  = new Role();
     // ===--- Role Detail Tab (0) ---===
     roleDetail = new Role();
     formRoleDetail: FormGroup;
@@ -76,14 +76,14 @@ export class RolesComponent implements OnInit {
     filterAvailablePermissions: Filter = new Filter();
     filterSelectedPermissions: Filter = new Filter();
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+    
     constructor(fb: FormBuilder,
         private _roleService: RoleService,
         private _confirmationService: ConfirmationService,
         private _sessionService: SessionService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute
+        ,private msgBox : MessageBoxesComponent) {
 
         this.formRoleDetail = fb.group({
             Name: ['', Validators.required],
@@ -107,7 +107,7 @@ export class RolesComponent implements OnInit {
 
         this.loadingData = true;
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             this.loadingData = false;
             return;
         }
@@ -148,7 +148,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -165,10 +165,10 @@ export class RolesComponent implements OnInit {
             }
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -195,19 +195,19 @@ export class RolesComponent implements OnInit {
            this.deletingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
            }
 
-           this.msgBox.ShowMessage('info', 'Role deleted.', 10);
+           this.msgBox.ShowMessage('info', 'Role deleted.');
            this.loadRoleDropDown(); // not updating the list so reload for now.
 
         }, err => {
            this.deletingData = false;
-           this.msgBox.ShowResponseMessage(err.status, 10);
+           this.msgBox.ShowResponseMessage(err.status);
 
            if (err.status === 401) {
-               this._sessionService.ClearSessionState();
+               this._sessionService.clearSession();
                setTimeout(() => {
                    this._router.navigate(['/membership/login'], { relativeTo: this._route });
                }, 3000);
@@ -257,25 +257,25 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             if (this.newRole) {
-                this.msgBox.ShowMessage('info', 'Role added.', 10);
+                this.msgBox.ShowMessage('info', 'Role added.');
                 this.roleDetail.UUID = response.Result.UUID;
                 this.roles.push(this.roleDetail);
                 this.newRole = false;
             } else {
-                this.msgBox.ShowMessage('info', 'Role updated.', 10);
+                this.msgBox.ShowMessage('info', 'Role updated.');
             }
             this.loadRoleDropDown(); // not updating the list so reload for now.
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -298,7 +298,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -306,10 +306,10 @@ export class RolesComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -337,7 +337,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -345,10 +345,10 @@ export class RolesComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -371,7 +371,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -379,10 +379,10 @@ export class RolesComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -405,19 +405,19 @@ export class RolesComponent implements OnInit {
                 this.loadingData = false;
                 this.showSelectedUsers(this.roleDetail.UUID);
                 this.showAvailableUsers(this.roleDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Users added.', 10);
+            this.msgBox.ShowMessage('info', 'Users added.');
 
         }, err => {
 
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -440,17 +440,17 @@ export class RolesComponent implements OnInit {
             if (response.Code !== 200) {
                 this.showSelectedUsers(this.roleDetail.UUID);
                 this.showAvailableUsers(this.roleDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Users removed.', 10);
+            this.msgBox.ShowMessage('info', 'Users removed.');
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -476,7 +476,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -484,10 +484,10 @@ export class RolesComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -511,7 +511,7 @@ export class RolesComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -519,10 +519,10 @@ export class RolesComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -546,19 +546,19 @@ export class RolesComponent implements OnInit {
                 this.loadingData = false;
                 this.showAvailablePermissions(this.roleDetail.UUID);
                 this.showSelectedPermissions(this.roleDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Permissions added.', 10);
+            this.msgBox.ShowMessage('info', 'Permissions added.');
 
         }, err => {
 
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -581,18 +581,18 @@ export class RolesComponent implements OnInit {
             if (response.Code !== 200) {
                 this.showAvailablePermissions(this.roleDetail.UUID);
                 this.showSelectedPermissions(this.roleDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Permissions removed.', 10);
+            this.msgBox.ShowMessage('info', 'Permissions removed.');
 
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

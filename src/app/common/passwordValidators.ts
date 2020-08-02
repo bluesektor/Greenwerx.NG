@@ -41,19 +41,19 @@ export class PasswordValidators {
 
         const newPassword = ctlPassword.value;
 
-        const ctlConfirmPassword = group.get('confirmPassword');
+        const ctlConfirmPassword = group.get('ConfirmPassword');
         if (ctlConfirmPassword == null) {  return null; }
 
-        const confirmPassword = ctlConfirmPassword.value;
+        const ConfirmPassword = ctlConfirmPassword.value;
 
         // If either of these fields is empty, the validation
         // will be bypassed. We expect the required validator to be
         // applied first.
-        if (newPassword == null || newPassword === '' || confirmPassword == null || confirmPassword === '') {
+        if (newPassword == null || newPassword === '' || ConfirmPassword == null || ConfirmPassword === '') {
             return null;
         }
 
-        if (newPassword !== confirmPassword) {
+        if (newPassword !== ConfirmPassword) {
             return { passwordsShouldMatch: true };
         }
 

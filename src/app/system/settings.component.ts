@@ -4,17 +4,16 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { Setting } from '../models/setting';
-import { SettingsService } from '../services/settings.service';
+import { SettingsService } from '../services/settings/settings.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 @Component({
     selector: 'app-settings',
     templateUrl: './settings.component.html',
-    providers: [SettingsService, SessionService]
 
 })
 export class SettingsComponent implements OnInit {
@@ -40,15 +39,15 @@ export class SettingsComponent implements OnInit {
         { 'name': 'Encrypted String', 'value': 'STRING.ENCRYPTED' }
     ];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+   
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _settingService: SettingsService,
-        private _sessionService: SessionService) {
+        private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent) {
 
-        this.msgBox = new MessageBoxesComponent();
+      
 
     }
 
@@ -88,17 +87,17 @@ export class SettingsComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.settings = response.Result;
             this.totalSettings = response.TotalRecordCount;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -136,7 +135,7 @@ export class SettingsComponent implements OnInit {
                 this.processingRequest = false;
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
 
@@ -144,18 +143,18 @@ export class SettingsComponent implements OnInit {
                 // Here, with the splice method, we remove 1 object
                 // at the given index.
                 this.settings.splice(index, 1);
-                this.msgBox.ShowMessage('info', 'Setting deleted.', 10);
+                this.msgBox.ShowMessage('info', 'Setting deleted.');
                 this.loadSettings(1, 25);
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
                 if (err.status === 429) {
-                    this._sessionService.ClearSessionState();
-                    this.msgBox.ShowMessage('error', 'Too many requests being sent.', 10);
+                    this._sessionService.clearSession();
+                    this.msgBox.ShowMessage('error', 'Too many requests being sent.');
                     return;
                 }
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -174,7 +173,7 @@ export class SettingsComponent implements OnInit {
         this.msgBox.closeMessageBox();
 
         if ( this.setting.AccountUUID ===  '' || this.setting.AccountUUID === null ) {
-            this.setting.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+            this.setting.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
         }
 
         this.settings.push(this.setting);
@@ -195,15 +194,15 @@ export class SettingsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newSetting) {// add
-                this.msgBox.ShowMessage('info', 'Setting added', 10);
+                this.msgBox.ShowMessage('info', 'Setting added.');
                 this.settings.push(this.setting);
             } else { // update
-                this.msgBox.ShowMessage('info', 'Setting updated', 10);
+                this.msgBox.ShowMessage('info', 'Setting updated.');
                 this.settings[this.findSelectedSettingIndex()] = this.setting;
             }
             this.loadSettings(1, 25);
@@ -211,10 +210,10 @@ export class SettingsComponent implements OnInit {
             this.setting = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

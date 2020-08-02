@@ -1,4 +1,4 @@
-﻿<div  *ngIf="!_sessionService.CurrentSession.validSession" id="pnlLogin">
+﻿<div  *ngIf="!_sessionService.CurrentSession?.ValidSession" id="pnlLogin">
     <app-messageboxes></app-messageboxes>
     <div class="container" style="padding-top:25px;">
         <div class="row">
@@ -24,8 +24,7 @@
                                         Please type a valid password.
                                     </div>
                                 </div>
-                                <p-checkbox [(ngModel)]="rememberMe" label="Remember Me" binary="true" formControlName="rememberMe"></p-checkbox>
-             
+                                <input style="margin-bottom: 20px;" type="checkbox" [(ngModel)]="rememberMe" formControlName="rememberMe" > Remember Me
                             </fieldset>
                             <button *ngIf="!authorizing" class="btn btn-primary btn-block"
                                     (click)="loginForm.ngSubmit.emit()"
@@ -44,7 +43,7 @@
         <a routerLink="/membership/login-help" routerLinkActive="active" >Login Help</a>
     </div>
 </div>
-<div  *ngIf="_sessionService.CurrentSession.validSession"  style="text-align:center;padding-top:25px;">
+<div  *ngIf="_sessionService.CurrentSession?.ValidSession"  style="text-align:center;padding-top:25px;">
         <button (click)="LogOut()"  *ngIf="!authorizing" type="button" id="bntLogout" class="btn btn-default" >Log Out</button>
         <div *ngIf="authorizing" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
 </div>

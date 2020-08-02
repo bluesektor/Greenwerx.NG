@@ -5,19 +5,19 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
+
 import { PreventUnsavedChangesGuard } from '../../prevent-unsaved-changes-guard.service';
 
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
 
-import { CommontmModule } from '../../common/commontm.module';
+import { CommonModuleEx } from '../../common/common.moduleex';
 import {RolesComponent } from './roles.component';
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { RoleService } from '../../services/roles.service';
 
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 import {RolesRoutingModule} from './roles.routing';
 import { MessageBoxesModule } from '../../common/messageboxes.module';
 
@@ -26,14 +26,13 @@ import { MessageBoxesModule } from '../../common/messageboxes.module';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule ,
+        CommonModuleEx ,
         RouterModule,
         AccordionModule,
         CheckboxModule,
         PickListModule,
         ConfirmDialogModule,
-        GrowlModule,
+        
         RolesRoutingModule,
         MessageBoxesModule
 
@@ -46,12 +45,6 @@ import { MessageBoxesModule } from '../../common/messageboxes.module';
     exports: [
         RolesComponent
     ]   ,
-    providers: [
-        RoleService,
-        PreventUnsavedChangesGuard,
-        SessionService,
-        ConfirmationService
-    ]
 })
 export class RolesModule {
 

@@ -4,7 +4,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 -->
 <app-messageboxes></app-messageboxes>
 <div id="pnlCurrencies">
-            <p-dataTable [value]="listData"
+    <h4>Currencies</h4>
+            <p-table [value]="listData"
                           [totalRecords]="listCount"
                          selectionMode="single"
                          [(selection)]="currency"
@@ -15,29 +16,32 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [lazy]="true"
                          (onLazyLoad)="lazyLoadCurrencyList($event)"
                         >
-                <p-header>Currencies</p-header>
-                <p-column field="Name" header="Name" [sortable]="false">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                        <label (click)="onRowSelect(listItem)"  >{{listItem.Name}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="Symbol"            header="Symbol" [sortable]="false"></p-column>
-                <p-column field="AssetClass"        header="Asset Class" [sortable]="false"></p-column>
-                <p-column field="Test"              header="Test" [sortable]="false"></p-column>
-                <p-footer>
-                    <div class="cell-block" style="width:25%">
-                        <button type="button" class="form-control input-sm" value="Add"
-                                (click)="showDialogToAdd()" label="Add">
-                            <i class="fa fa-plus" style="color:green;"></i> Add
-                        </button>
-                    </div>
+               
+                        <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                            <tr>
+                                <td> <ng-template let-listItem="rowData" pTemplate="body">
+                                    <img src="{{baseUrl}}{{data.Image}}" style="height:32px;" (click)="onRowSelect(data)" />
+                                    <label (click)="onRowSelect(data)"  >{{listItem.Name}}</label>
+                                </ng-template></td>
+                                 <td>{{data.Symbol}}</td>
+                                 <td>{{data.AssetClass}}</td>
+                                 <td>{{data.Test}}</td>
+                            </tr>
+                        </ng-template>
 
-                    <div class="cell-block" style="width:25%">
-                        <p-checkbox [(ngModel)]="loadDefaultData" label="Defaults" (onChange)="loadDefaultsClick($event)" binary="loadDefaultData"></p-checkbox>
-                    </div>
-                </p-footer>
-            </p-dataTable>
+                        <ng-template pTemplate="footer">
+                            <div class="cell-block" style="width:25%">
+                                <button type="button" class="form-control input-sm" value="Add"
+                                        (click)="showDialogToAdd()" label="Add">
+                                    <i class="fa fa-plus" style="color:green;"></i> Add
+                                </button>
+                            </div>
+        
+                            <div class="cell-block" style="width:25%">
+                                <p-checkbox [(ngModel)]="loadDefaultData" label="Defaults" (onChange)="loadDefaultsClick($event)" binary="loadDefaultData"></p-checkbox>
+                            </div>
+                        </ng-template>
+            </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Currency Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
@@ -48,8 +52,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group">
 
-                        <img src="{{baseUrl}}{{currency.Image}}" style="max-width:64px;max-width:64px;cursor:pointer; " (click)="editImage = !editImage" />
-                        <p-fileUpload *ngIf="editImage" name="uploadedFiles[]" url="{{fileUploadUrl}}{{currency.UUID}}/{{currency.UUIDType}}"
+                        <img src="{{baseUrl}}{{currency.Image}}" style="max-width:64px;max-width:64px;cursor:pointer; "  />
+                        <p-fileUpload  name="uploadedFiles[]" url="{{fileUploadUrl}}{{currency.UUID}}/{{currency.UUIDType}}"
                                       id="{{currency.UUID}}"
                                       (onBeforeSend)="onBeforeSendFile($event)"
                                       (onUpload)="onImageUpload($event,currency.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
@@ -87,7 +91,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         </div>
                     </div>
                 <p-footer>
-                    <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
+                    <div style="width:100%;" class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="save()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
                         <button *ngIf="!newCurrency" type="button" style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="delete()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>

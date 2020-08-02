@@ -1,7 +1,7 @@
 ﻿import { Component, ViewChild, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; //
-import { UserService } from '../../services/user.service';
-import { SessionService } from '../../services/session.service';
+import { UserService } from '../../services/user/user.service';
+import { SessionService } from '../../services/user/session.service';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
@@ -9,7 +9,6 @@ import { PasswordValidators } from '../../common/passwordValidators';
 @Component({
 
     templateUrl: './change-password.component.html',
-    providers: [ UserService, SessionService]
 })
 
 export class ChangePasswordComponent {
@@ -22,14 +21,13 @@ export class ChangePasswordComponent {
     pageTitle = 'Change Password';
     updating = false;
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
-    constructor(
+     constructor(
         @Inject(FormBuilder) fb: FormBuilder,
         public _userService: UserService,
         public _sessionService: SessionService,
         private _router: Router,
-        private _route: ActivatedRoute,
+        private _route: ActivatedRoute
+        ,private msgBox : MessageBoxesComponent
         ) {
 
         this._route.params.subscribe(params => {
@@ -58,7 +56,7 @@ export class ChangePasswordComponent {
                 // will compare confirm password with new password and this will
                 // implicitly enforce that confirm password should match complexity
                 // rules.
-                confirmPassword: ['', Validators.required],
+                ConfirmPassword: ['', Validators.required],
                 resetPassword: 'false',
                 confirmationCode : ''
         }, { validator: PasswordValidators.passwordsShouldMatch });
@@ -75,11 +73,11 @@ export class ChangePasswordComponent {
            response => {
                 this.updating = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
 
-                this.msgBox.ShowMessage('success', 'Password updated.', 10);
+                this.msgBox.ShowMessage('success', 'Password updated.');
                 if (this.resetPassword) {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }
@@ -87,7 +85,7 @@ export class ChangePasswordComponent {
             },
             err => {
                 this.updating = false;
-                this.msgBox.ShowMessage('error', 'Failed to connect. Check your connection or try again later.', 10   );
+                this.msgBox.ShowMessage('error', 'Failed to connect. Check your connection or try again later.');
         });
     }
 

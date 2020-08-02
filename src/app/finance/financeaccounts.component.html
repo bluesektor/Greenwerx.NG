@@ -5,7 +5,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 <app-messageboxes></app-messageboxes>
 <div id="pnlFinanceAccounts">
         <div class="row">
-            <p-dataTable [value]="listData"
+            <h4>Finance Accounts</h4>
+            <p-table [value]="listData"
                          [totalRecords]="listCount"
                          selectionMode="single"
                          [(selection)]="currency"
@@ -15,32 +16,52 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [responsive]="true"
                          [lazy]="true"
                          (onLazyLoad)="lazyLoadFinanceAccountList($event)">
-                <p-header>Finance Accounts</p-header>
-                <p-column field="Name" header="Name" [sortable]="false">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                        <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="AccountNumber" header="Account Number" [sortable]="false"></p-column>
-                <p-column field="CurrencyName" header="Currency" [sortable]="false">
-                    <ng-template let-listItem="rowData" pTemplate="body">
-                        <label >{{listItem.CurrencyName}}</label>
-                    </ng-template>
-                </p-column>
-                <p-column field="Balance" header="Balance" [sortable]="false"></p-column>
-                <p-column field="Active" header="Active" [sortable]="false"></p-column>
-                <p-column field="LocationType" header="LocationType" [sortable]="false"></p-column>
-                <p-footer>
-                    <div class="cell-block" style="width:25%">
-                        <button type="button" class="form-control input-sm" value="Add"
-                                (click)="showDialogToAdd()" label="Add">
-                            <i class="fa fa-plus" style="color:green;"></i> Add
-                        </button>
-                    </div>
-                </p-footer>
-            </p-dataTable>
 
+                         <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>AccountNumber</th>
+                                <th>CurrencyName</th>
+                                <th>Balance</th>
+                                <th>Active</th>
+                                <th>LocationType</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                            <tr>
+                                <td>  
+                                    <ng-template let-listItem="rowData" pTemplate="body">
+                                    <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
+                                    <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
+                                    </ng-template>
+                                </td>
+                                 <td>{{data.AccountNumber}}</td>
+                                 <td>  <ng-template let-listItem="rowData" pTemplate="body">
+                                    <label >{{data.CurrencyName}}</label>
+                                    </ng-template>
+                                </td>
+                                 <td>{{data.Balance}}</td>
+                                 <td>{{data.Active}}</td>
+                                 <td>{{data.LocationType}}</td>
+                                 <td>{{data.CategoryType}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <tr>
+                                <td >
+                                    <div class="cell-block" style="width:25%">
+                                        <button type="button" class="form-control input-sm" value="Add"
+                                                (click)="showDialogToAdd()" label="Add">
+                                            <i class="fa fa-plus" style="color:green;"></i> Add
+                                        </button>
+                                    </div>
+                                
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    
+   
             <!--Dialog for  crud actions -->
             <p-dialog header="FinanceAccount Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
                 <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="selectedItem">
@@ -50,8 +71,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group">
 
-                        <img src="{{baseUrl}}{{selectedItem.Image}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
-                        <p-fileUpload *ngIf="editImage" name="uploadedFiles[]" url="{{fileUploadUrl}}{{selectedItem.UUID}}/{{selectedItem.UUIDType}}"
+                        <img src="{{baseUrl}}{{selectedItem.Image}}" style="width:64px;height:64px;"   />
+                        <p-fileUpload  name="uploadedFiles[]" url="{{fileUploadUrl}}{{selectedItem.UUID}}/{{selectedItem.UUIDType}}"
                                       id="{{selectedItem.UUID}}"
                                       (onBeforeSend)="onBeforeSendFile($event)"
                                       (onUpload)="onImageUpload($event,selectedItem.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
@@ -62,7 +83,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group">
                         <label for="Balance">Balance</label>
-                        <input pInputText id="Balance" [disabled]="disabled" [(ngModel)]="selectedItem.Balance" class="input-sm form-control" />
+                        <input pInputText id="Balance" [(ngModel)]="selectedItem.Balance" class="input-sm form-control" />
                     </div>
                     <div class="form-group">
                         <label for="cboAccountCurrencies">Currency</label>
@@ -70,9 +91,9 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                         [suggestions]="filteredCurrencies" 
                                         (completeMethod)="filterCurrencies($event)"
                                         [minLength]="1" placeholder="Hint: type 'v' or 'f'"  [size]="30" [dropdown]="true" 
-                                        (onDropdownClick)="handleDropdownClick($event)"
+                                        (onDropdownClick)="handleDropdownClick( )"
                                         (onSelect)="onSelectCurrency($event)"
-                                        [field]="name" >
+                                          >
                         </p-autoComplete>
                     </div>
                     <div class="form-group">
@@ -90,7 +111,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group">
                         <label for="ClientCode">Clien tCode</label>
-                        <input pInputText id="ClientCode" [disabled]="disabled" [(ngModel)]="selectedItem.ClientCode" class="input-sm form-control" />
+                        <input pInputText id="ClientCode"  
+                            [(ngModel)]="selectedItem.ClientCode" class="input-sm form-control" />
                     </div>
                      
                     <!-- this was used to get account settlement info for bitcoin services.

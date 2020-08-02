@@ -5,6 +5,7 @@ import { MessageBoxesComponent } from './common/messageboxes.component';
 @Component({
     template: `
  <app-messageboxes></app-messageboxes>
+ 
 <h2>{{appName }} Terms Of Service</h2>
 
 <article>
@@ -12,7 +13,6 @@ import { MessageBoxesComponent } from './common/messageboxes.component';
 <div *ngIf="loading" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
 </article>
 `,
-    providers: [AppService]
 })
 
 export class TermsComponent {
@@ -21,18 +21,19 @@ export class TermsComponent {
     pageSettings: any;
     appName: string;
     termsOfService: string;
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
+    
 
-    constructor(private _appService: AppService) {
+    constructor(private _appService: AppService,
+        private msgBox:MessageBoxesComponent) {
 
         this.appName = '';
-        const settingResult = this._appService.getDashboard('TermsOfService', '');
+        const settingResult = this._appService.getDashboard('TermsOfService');
         this.loading = true;
 
         settingResult.subscribe(
             response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const dashBoard = JSON.parse(response.Result);
@@ -41,7 +42,7 @@ export class TermsComponent {
             },
             err => {
                 this.loading = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
 
 
@@ -53,13 +54,13 @@ export class TermsComponent {
         this.loading = true;
         const replace = '[{  "Command" : "Replace" , "Arguments" : [{ "key": "[DOMAIN]" , "value": "' + this.appName + '" } ] } ]';
 
-        const result = this._appService.getDashboard('TermsOfService', replace);
+        const result = this._appService.getDashboard('TermsOfService'); //todo reimplement, replace);
         result.subscribe(
             response => {
                 this.loading = false;
 
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.termsOfService = response.Result.Content[1].Value;
@@ -67,7 +68,7 @@ export class TermsComponent {
             },
             err => {
                  this.loading = false;
-                 this.msgBox.ShowResponseMessage(err.status, 10);
+                 this.msgBox.ShowResponseMessage(err.status);
 
 
 

@@ -2,66 +2,64 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions } from '@angular/http';
-import 'rxjs/add/operator/map';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { Api } from '../services/api';
+import { SessionService } from '../services/user/session.service';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { Strain } from '../models/strain';
 
 @Injectable()
-export class PlantsService extends WebApiService {
+export class PlantsService  {
 
-    constructor(http: Http, sessionService: SessionService) {
-        super(http, sessionService);
+    constructor(private api :Api) {
+         
     }
 
 
     addPlant(product) {
-        return this.invokeRequest('POST', 'api/Plants/Add', JSON.stringify(product));
+        return this.api.invokeRequest('POST', 'api/Plants/Add', product);
     }
 
     deletePlant(plantUUID) {
-        return this.invokeRequest('DELETE', 'api/Plants/Delete/' + plantUUID, ''    );
+        return this.api.invokeRequest('DELETE', 'api/Plants/Delete/' + plantUUID, ''    );
     }
 
     getPlants(filter: Filter) {
-        return this.invokeRequest('GET', 'api/Plants?filter=' + JSON.stringify(filter) );
+        return this.api.invokeRequest('GET', 'api/Plant' ,filter );
     }
 
     getPlant(plantUUID) {
-        return this.invokeRequest('GET', 'api/Plants/' + plantUUID, ''    );
+        return this.api.invokeRequest('GET', 'api/Plants/' + plantUUID, ''    );
     }
 
     getPlantDetails(plantUUID, productType) {
-        return this.invokeRequest('GET', 'api/Plant/' + plantUUID + '/' + productType + '/Details' , ''    );
+        return this.api.invokeRequest('GET', 'api/Plant/' + plantUUID + '/' + productType + '/Details' , ''    );
     }
 
     updatePlant(plant) {
-        return this.invokeRequest('PATCH', 'api/Plants/Update', plant);
+        return this.api.invokeRequest('PATCH', 'api/Plants/Update', plant);
     }
 
 
     // ===--- Strains ---===
 
     addStrain(strain: Strain) {
-        return this.invokeRequest('POST', 'api/Strains/Add', JSON.stringify(strain));
+        return this.api.invokeRequest('POST', 'api/Strains/Add', strain);
     }
 
     getStrains(filter: Filter) {
-        return this.invokeRequest('GET', 'api/Strains?filter=' + JSON.stringify(filter), );
+        return this.api.invokeRequest('GET', 'api/Strains' ,filter );
     }
 
     getStrain(strainUUID) {
-        return this.invokeRequest('GET', 'api/StrainsBy/' + strainUUID, ''    );
+        return this.api.invokeRequest('GET', 'api/StrainsBy/' + strainUUID, ''    );
     }
 
     deleteStrain(strainUUID: string) {
-        return this.invokeRequest('DELETE', 'api/Strains/Delete/' + strainUUID, ''    );
+        return this.api.invokeRequest('DELETE', 'api/Strains/Delete/' + strainUUID, ''    );
     }
 
     updateStrain(strain: Strain) {
-        return this.invokeRequest('PATCH', 'api/Strains/Update', JSON.stringify(strain));
+        return this.api.invokeRequest('PATCH', 'api/Strains/Update', strain);
     }
 }

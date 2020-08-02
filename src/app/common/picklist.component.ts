@@ -2,9 +2,9 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Component, ViewChild, OnInit, Input, Output , EventEmitter } from '@angular/core';
-import { PickListModule } from 'primeng/primeng';
-import { WebApiService } from '../services/webApi.service';
-import { SessionService } from '../services/session.service';
+import { PickListModule } from 'primeng';
+import { Api } from '../services/api';
+import { SessionService } from '../services/user/session.service';
 import { Node } from '../models/node';
 
 // Implementation example
@@ -13,7 +13,6 @@ import { Node } from '../models/node';
     selector: 'app-picklistcomponent',
 
     templateUrl: './picklist.component.html',
-    providers: [SessionService, WebApiService]
 })
 export class PickListComponent implements OnInit {
 
@@ -28,7 +27,7 @@ export class PickListComponent implements OnInit {
     @Output() onMoveToSource: EventEmitter<any> = new EventEmitter();
     @Output() onMoveToTarget: EventEmitter<any> = new EventEmitter();
 
-    constructor(private _sessionService: SessionService, private _webApiService: WebApiService ) {
+    constructor(private _sessionService: SessionService, private _webApiService: Api ) {
     }
 
     ngOnInit() {

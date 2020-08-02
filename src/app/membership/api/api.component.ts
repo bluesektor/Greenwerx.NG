@@ -1,13 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule } from 'primeng';
 
 @Component({
     templateUrl: './api.component.html',
-    providers: [ SessionService]
 
 })
 export class APIComponent implements OnInit {
@@ -16,15 +15,13 @@ export class APIComponent implements OnInit {
     displayDialog: boolean;
     newUser: boolean;
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+    
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
-        private _sessionService: SessionService) {
-
-       this.msgBox = new MessageBoxesComponent();
-
+        private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent) {
+  
     }
 
     ngOnInit() {

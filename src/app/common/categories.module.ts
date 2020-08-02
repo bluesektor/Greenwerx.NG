@@ -4,8 +4,8 @@
 import { NgModule } from '@angular/core';
 import { FormsModule} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { PickListModule } from 'primeng/primeng';
-import { DataTableModule, SharedModule, DialogModule, CheckboxModule  } from 'primeng/primeng';
+import { PickListModule } from 'primeng';
+import { TableModule, SharedModule, DialogModule, CheckboxModule  } from 'primeng';
 import { MessageBoxesModule } from './messageboxes.module';
 import { CategoriesComponent} from './categories.component';
 
@@ -15,7 +15,7 @@ import { CategoriesComponent} from './categories.component';
         FormsModule,
         CommonModule,
         MessageBoxesModule,
-        DataTableModule,
+        TableModule,
         SharedModule,
         DialogModule,
         CheckboxModule

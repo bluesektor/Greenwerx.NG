@@ -3,11 +3,11 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CheckboxModule, FileUploadModule, InputTextModule } from 'primeng/primeng';
+import { CheckboxModule, FileUploadModule, InputTextModule } from 'primeng';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, AutoCompleteModule } from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { FinanceAccount } from '../models/financeaccount';
@@ -15,11 +15,11 @@ import { FinanceService } from '../services/finance.service';
 import { AppService } from '../services/app.service';
 import { Currency } from '../models/currency';
 import { GeoService } from '../services/geo.service';
+import {Api} from '../services/api';
 
 @Component({
     templateUrl: './financeaccounts.component.html',
-    providers: [SessionService, FinanceService, AppService, GeoService]
-
+  
 })
 export class FinanceAccountsComponent implements OnInit {
 
@@ -42,21 +42,21 @@ export class FinanceAccountsComponent implements OnInit {
     selCurrency = '';
 
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+  
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _geoService: GeoService,
         private _sessionService: SessionService,
-        private _financeService: FinanceService) {
-        this.msgBox = new MessageBoxesComponent();
+        private _financeService: FinanceService
+        ,private msgBox : MessageBoxesComponent) {
+      
     }
 
     ngOnInit() {
-        this.baseUrl = this._appService.BaseUrl();
-        this.fileUploadUrl = this._appService.BaseUrl() + 'api/File/Upload/';
+        this.baseUrl = Api.url;
+        this.fileUploadUrl = Api.url + 'api/File/Upload/';
         this.selectedItem.Image = '/Content/Default/Images/bank.png';
         this.loadLocationTypes();
         //   this.loadcurrencies();
@@ -68,7 +68,7 @@ export class FinanceAccountsComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.currencies = response.Result;
@@ -77,10 +77,10 @@ export class FinanceAccountsComponent implements OnInit {
         }, err => {
             this.processingRequest = false;
 
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -99,7 +99,7 @@ export class FinanceAccountsComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.listData = response.Result;
@@ -107,10 +107,10 @@ export class FinanceAccountsComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -158,7 +158,7 @@ export class FinanceAccountsComponent implements OnInit {
                 this.displayDialog = false;
                 this.processingRequest = false;
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 const index = this.findSelectedItemIndex(this.selectedItem.UUID);
@@ -166,13 +166,13 @@ export class FinanceAccountsComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1); // not updating the list so reload
                 this.loadFinanceAccounts(1, 25);
-                this.msgBox.ShowMessage('info', 'FinanceAccount deleted.', 10);
+                this.msgBox.ShowMessage('info', 'FinanceAccount deleted.');
             }, err => {
                 this.processingRequest = false;
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -198,16 +198,16 @@ export class FinanceAccountsComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newFinanceAccount) {// add
-                this.msgBox.ShowMessage('info', 'FinanceAccount added', 10);
+                this.msgBox.ShowMessage('info', 'FinanceAccount added.');
                 this.selectedItem = response.Result;
                 this.listData.push(this.selectedItem);
             } else { // update
-                this.msgBox.ShowMessage('info', 'FinanceAccount updated', 10);
+                this.msgBox.ShowMessage('info', 'FinanceAccount updated.');
                 this.listData[this.findSelectedItemIndex(this.selectedItem.UUID)] = this.selectedItem;
             }
             this.selectedItem = null;
@@ -217,10 +217,10 @@ export class FinanceAccountsComponent implements OnInit {
             this.selectedItem = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -231,7 +231,7 @@ export class FinanceAccountsComponent implements OnInit {
 
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
     }
 
     onImageUpload(event, itemUUID) {
@@ -243,9 +243,9 @@ export class FinanceAccountsComponent implements OnInit {
 
         if (this.newFinanceAccount === true) {
             const idx = this.findSelectedItemIndex(itemUUID);
-            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         } else {
-            this.selectedItem.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+            this.selectedItem.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
         }
     }
 
@@ -281,7 +281,7 @@ export class FinanceAccountsComponent implements OnInit {
             let currency = new Currency();
             this._financeService.getCurrencies(filter).subscribe(response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 currency = response.Result;
@@ -306,7 +306,7 @@ export class FinanceAccountsComponent implements OnInit {
         let currency = new Currency();
         this._financeService.getCurrencies(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             currency = response.Result;
@@ -338,7 +338,7 @@ export class FinanceAccountsComponent implements OnInit {
         filter.Screens.push(screen);
         this._financeService.getCurrencies(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             for (let i = 0; i < response.Result.length; i++) {
@@ -356,7 +356,7 @@ export class FinanceAccountsComponent implements OnInit {
 
         this._financeService.getCurrencies(filter).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -371,7 +371,7 @@ export class FinanceAccountsComponent implements OnInit {
 
         this._financeService.getCurrency(value).subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 15);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.selectedItem.CurrencyUUID = response.Result.UUID;
@@ -389,17 +389,17 @@ export class FinanceAccountsComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locationTypes = response.Result;
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

@@ -1,37 +1,43 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild, Input  } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, ElementRef  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { DataTableModule, SharedModule, DialogModule, AccordionModule, SelectItem, DropdownModule,
-         InputSwitchModule, FileUploadModule} from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, AccordionModule, SelectItem, DropdownModule,
+         InputSwitchModule, FileUploadModule, Table} from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { EquipmentService } from '../services/equipment.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { InventoryItem } from '../models/inventory';
 import { InventoryService } from '../services/inventory.service';
 import { UnitsOfMeasureService } from '../services/unitsofmeasure.service';
 import { GeoService } from '../services/geo.service';
+import { ProductService } from '../services/product.service';
 import { Location } from '../models/location';
 import { UnitOfMeasure } from '../models/unitofmeasure';
-
-import { ProductService } from '../services/product.service';
+import {Api} from '../services/api';
+import {GetUOMPipe} from '../common/pipes/uom.pipe';
+import * as _ from 'lodash';
 import { Product } from '../models/product';
+import { fromEvent,timer , Observable  } from 'rxjs';
+
+import { delayWhen, map,  debounceTime,
+   distinctUntilChanged,switchMap, retryWhen, startWith,tap } from 'rxjs/operators';
 
 @Component({
     selector: 'pm-inventory',
     templateUrl: './inventory.component.html',
-    providers: [InventoryService, SessionService, GeoService, ProductService, EquipmentService, UnitsOfMeasureService]
-
+  
 })
 
 
 export class InventoryComponent implements OnInit {
 
+    first = 0;
+    rows = 10;
     @Input() defaultOnly = 'false';
-
     locationFilter: Filter = new Filter();
 
     editedItems: any[]= [];
@@ -46,7 +52,7 @@ export class InventoryComponent implements OnInit {
     dialogTitle = '';
     categories: SelectItem[]= [];
 
-    unitsOfMeasure: any[] = [];
+   
     // had to create this for the cbo, and set the name and value to the name.
     // this was because the cbo keeps showing the value after selecting an option.
     unitsOfMeasureOptions: SelectItem[] = [];
@@ -64,6 +70,11 @@ export class InventoryComponent implements OnInit {
     selectedUOM = '';
 
      // ==========================================================    Dialog data
+    dlgFirst = 0;
+    dlgRows = 10;
+
+    @ViewChild('txtSearch', {static: false}) txtSearchInput: ElementRef;
+
      selectedCategoryUUID = '';
      availableItems: InventoryItem[];
      productFilter: Filter = new Filter();
@@ -83,8 +94,7 @@ export class InventoryComponent implements OnInit {
         { 'name': 'Vehicle', 'value': 'Vehicle' }
     ];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+  
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
@@ -94,9 +104,10 @@ export class InventoryComponent implements OnInit {
         private _inventoryService: InventoryService,
         private _sessionService: SessionService,
         private _unitsOfMeasureService: UnitsOfMeasureService
+        ,private msgBox : MessageBoxesComponent
     ) {
-        this.msgBox = new MessageBoxesComponent();
-        this.fileUploadUrl = this._inventoryService.BaseUrl() + 'api/File/Upload/';
+       
+        this.fileUploadUrl = Api.url + 'api/File/Upload/';
     }
 
     imageUrl = '';
@@ -106,51 +117,69 @@ export class InventoryComponent implements OnInit {
     uploadedFiles: any[] = [];
 
     ngOnInit() {
-        const filter = new Filter();
+        console.log('inventory.component.ts ngOnInit');
+        const filter = 
+        new Filter();
         filter.PageResults = true;
         filter.StartIndex = 1;
         filter.PageSize = 25;
+        
+        this.loadLocations('custom');
+        this.loadListFilters();
 
-        this._unitsOfMeasureService.get(filter).subscribe(response => {
-            if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
-                return false;
-            }
-            this.unitsOfMeasure = response.Result;
-            for (let i = 0; i < this.unitsOfMeasure.length; i++) {
-                this.unitsOfMeasureOptions.push({ label: response.Result[i].Name, value: response.Result[i].UUID });
-            }
+        if(  this._unitsOfMeasureService.unitsOfMeasure === undefined|| 
+                this._unitsOfMeasureService.unitsOfMeasure === null ||
+                this._unitsOfMeasureService.unitsOfMeasure.length === 0 ){
+            this._unitsOfMeasureService.get(filter).subscribe(response => {
+                if (response.Code !== 200) {
+                    this.msgBox.ShowMessage(response.Status, response.Message);
+                    return false;
+                }
+                console.log('invintory.component.ts _unitsOfMeasureService.get',response);
+                this._unitsOfMeasureService.unitsOfMeasure= response.Result;
+                this.initializeUOMOptions();
 
-            this.loadLocations('custom');
-            this.loadListFilters();
-        });
+            
+            });
+        }else{
+            console.log('invintory.component.ts else');
+            this.initializeUOMOptions();
+        }
+     
+    }
+
+    initializeUOMOptions(){
+        console.log('invintory.component.ts initializeUOMOptions');
+        console.log('invintory.component.ts initializeUOMOptions',this._unitsOfMeasureService.unitsOfMeasure);
+        for (let i = 0; i < this._unitsOfMeasureService.unitsOfMeasure.length; i++) {
+            console.log('invintory.component.ts initializeUOMOptions name', this._unitsOfMeasureService.unitsOfMeasure[i].Name);
+            this.unitsOfMeasureOptions.push({ label: this._unitsOfMeasureService.unitsOfMeasure[i].Name, value: this._unitsOfMeasureService.unitsOfMeasure[i].UUID });
+        }
     }
 
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
     }
 
     onCboChangeUOM(event, itemUUID) {
-
-        const uomIdx = this.findUOMIndex(event.value);
-        if (uomIdx < 0) {
+        let uom = _.find(this._unitsOfMeasureService.unitsOfMeasure, x => x.UUID === event.value);
+      
+        if (!uom) 
             return;
-        }
-        const uomUUID = this.unitsOfMeasure[uomIdx].UUID;
 
         let editIndex = this.findEditItemIndex(itemUUID);
         const inventoryIdx = this.findInventoryItemIndex(itemUUID);
         if (editIndex < 0) {
-            this.inventoryItems[inventoryIdx].UOMUUID = uomUUID;
-            this.inventoryItems[inventoryIdx].UOM = this.unitsOfMeasure[uomIdx].Name;
+            this.inventoryItems[inventoryIdx].UOMUUID = uom.UUID;
+            this.inventoryItems[inventoryIdx].UOM = uom.Name;
             this.editedItems.push(this.inventoryItems[inventoryIdx]);
             editIndex = this.findEditItemIndex(itemUUID);
         } else {
-            this.inventoryItems[inventoryIdx].UOMUUID = uomUUID;
-            this.inventoryItems[inventoryIdx].UOM = this.unitsOfMeasure[uomIdx].Name;
-            this.editedItems[editIndex].UOMUUID = uomUUID;
-            this.editedItems[editIndex].UOM = this.unitsOfMeasure[uomIdx].Name;
+            this.inventoryItems[inventoryIdx].UOMUUID = uom.UUID;
+            this.inventoryItems[inventoryIdx].UOM = uom.Name;
+            this.editedItems[editIndex].UOMUUID = uom.UUID;
+            this.editedItems[editIndex].UOM = uom.Name;
         }
     }
 
@@ -158,23 +187,24 @@ export class InventoryComponent implements OnInit {
     // Then add accordingly
     //
     onCboLeaveUOM(event, productUUID) {
-        const uomIdx = this.findUOMIndex(event.currentTarget.value);
+        let uom = _.find(this._unitsOfMeasureService.unitsOfMeasure, x => x.UUID === event.value);
+      
         // not custom so return
-        if (uomIdx > 0 || event.currentTarget.value === '') {return; }
+        if (uom || event.currentTarget.value === '') {return; }
 
-        const uom = new UnitOfMeasure();
-        uom.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
-        uom.Name = event.currentTarget.value;
-        uom.Category = 'product.weight';
+        const newUOM = new UnitOfMeasure();
+        newUOM.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
+        newUOM.Name = event.currentTarget.value;
+        newUOM.Category = 'product.weight';
 
-        this._unitsOfMeasureService.add(uom).subscribe( response => {
+        this._unitsOfMeasureService.add(newUOM).subscribe( response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             // Update all...
             const newUOM = response.Result;
-            this.unitsOfMeasure.push(newUOM);
+            this._unitsOfMeasureService.unitsOfMeasure.push(newUOM);
             this.unitsOfMeasureOptions.push({ label: newUOM.Name, value: newUOM.Name });
             const inventoryIdx = this.findInventoryItemIndex(productUUID);
             let editIndex = this.findEditItemIndex(productUUID);
@@ -198,7 +228,7 @@ export class InventoryComponent implements OnInit {
         }
 
         const idx = this.findInventoryItemIndex(productUUID);
-        this.inventoryItems[idx].Image = this._inventoryService.BaseUrl() + 'Content/Uploads/' + this._sessionService.CurrentSession.userAccountUUID + '/' + currFile.name;
+        this.inventoryItems[idx].Image = Api.url + 'Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
 
     }
 
@@ -227,7 +257,7 @@ export class InventoryComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.locations = response.Result;
@@ -243,10 +273,10 @@ export class InventoryComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -257,7 +287,7 @@ export class InventoryComponent implements OnInit {
     }
 
     lazyLoadInventoryList(event) {
-
+        console.log('inventory.component.ts lazyLoadInventoryList');
         if (!this.selectedLocationUUID || this.selectedLocationUUID === '') {
             return;
         }
@@ -296,30 +326,28 @@ export class InventoryComponent implements OnInit {
     }
 
     loadInventory(locationUUID: string,  page?: number, pageSize?: number) {
-
+        console.log('inventory.component.ts loadInventory');
         this.locationFilter.PageResults = true;
         this.locationFilter.PageSize = pageSize;
         this.locationFilter.StartIndex = page;
         this.processingRequest = true;
         const res = this._inventoryService.getInventory(locationUUID,  this.locationFilter);
         res.subscribe(response => {
+            console.log('inventory.component.ts loadInventory response:', response);
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.inventoryItems = response.Result;
             this.totalInventoryItems = response.TotalRecordCount;
-           //  init the name of the measures.
-            for (let i = 0; i < this.inventoryItems.length; i++) {
-                this.inventoryItems[i].UOM = this.getUOMName(this.inventoryItems[i].UOMUUID);
-            }
+        
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -355,32 +383,33 @@ export class InventoryComponent implements OnInit {
             this.editedItems.push(this.inventoryItems[this.findInventoryItemIndex(itemUUID)]);
             editIndex = this.findEditItemIndex(itemUUID);
         }
-
+console.log('inventory.component.ts onEditTemplateValue  this.inventoryItems[inventoryIdx]:', this.inventoryItems[inventoryIdx]);
         this.editedItems[editIndex] = this.inventoryItems[inventoryIdx];
     }
 
-    saveEditedItems() {
+    saveEditedItems(event) {
+        console.log('inventory.component.ts saveEditedItems');
         this.msgBox.closeMessageBox();
 
         // after save reload the list incase a system.default.account item had to be cloned as users account
         this.processingRequest = true;
-        const res = this._inventoryService.updateInventory(this.editedItems);
+        const res = this._inventoryService.updateItems(this.editedItems);
         res.subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Inventory updated', 10   );
+            this.msgBox.ShowMessage('info', 'Inventory updated');
             this.loadInventory(this.selectedLocationUUID, 1, 25);
             this.editedItems = [];
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -397,7 +426,7 @@ export class InventoryComponent implements OnInit {
 
             this._inventoryService.deleteItem(productUUID).subscribe(response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 let editIndex = this.findEditItemIndex(productUUID);
@@ -417,9 +446,81 @@ export class InventoryComponent implements OnInit {
         }
     }
 
+    onRowEditCancel(item: any, index: number) {
+        console.log('inventory.component.ts onRowEditCancel');
+       //this.cars2[index] = this.clonedCars[car.vin];
+        //delete this.clonedCars[car.vin];
+    }
+
+    next() {
+        console.log('inventory.component.ts next');
+        this.first = this.first + this.rows;
+    }
+
+    prev() {
+        console.log('inventory.component.ts prev');
+        this.first = this.first - this.rows;
+    }
+
+    reset() {
+        console.log('inventory.component.ts reset');
+        this.first = 0;
+    }
+
+    isLastPage(): boolean {
+        console.log('inventory.component.ts isLastPage');
+        return this.first === (this.inventoryItems.length - this.rows);
+    }
+
+    isFirstPage(): boolean {
+        console.log('inventory.component.ts isFirstPage');
+        return this.first === 0;
+    }
+
     // ==========================================================    Dialog data
+    //
+    @ViewChild('lstAvailableItems') lstAvailableItems: Table;
+    dlgNext() {
+        console.log('inventory.component.ts next');
+        this.dlgFirst = this.dlgFirst + this.dlgRows;
+     //  this.lstAvailableItems.onPageChange 
+    }
+
+    dlgOnPage(event){
+        console.log('inventory.component.ts dlgOnPage event:', event);
+        this.first = event.first;
+        this.rows = event.rows;
+         //  event.first: Index of first record
+        //event.rows: Number of rows to display in new page
+        //event.page: Index of the new page
+        //event.pageCount: Total number of pages 
+    }
+ 
+    dlgPrev() {
+        console.log('inventory.component.ts prev');
+        this.dlgFirst = this.dlgFirst - this.dlgRows;
+    }
+
+    dlgReset() {
+        console.log('inventory.component.ts reset');
+        this.dlgFirst = 0;
+    }
+
+    dlgIsLastPage(): boolean {
+        console.log('inventory.component.ts isLastPage');
+        return this.dlgFirst === (this.availableItems.length - this.dlgRows);
+    }
+
+    dlgIsdlgFirstPage(): boolean {
+        console.log('inventory.component.ts isdlgFirstPage');
+        return this.dlgFirst === 0;
+
+        
+     //   this.lstAvailableItems.paginator
+    }
 
     showDialogToAdd(group) {
+        console.log('inventory.compoent.ts showDialogToAdd group:', group);
         this.msgBox.closeMessageBox();
         this.dialogTitle = group;
         this.itemGroup = group;
@@ -428,9 +529,11 @@ export class InventoryComponent implements OnInit {
         this.loadAvailableItems(1, 25);
         this.addingToInventory = true;
         this.displayDialog = true;
+       
     }
 
     close() {
+        
         this.displayDialog = false;
     }
 
@@ -445,10 +548,11 @@ export class InventoryComponent implements OnInit {
             }
         } else { // Product
             const filter = new Filter();
+        
             const res = this._productService.getProductCategories(filter);
             res.subscribe(response => {
                 if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                    this.msgBox.ShowMessage(response.Status, response.Message);
                     return false;
                 }
                 this.categories.push({ label: 'Select one...', value: '' });
@@ -458,10 +562,10 @@ export class InventoryComponent implements OnInit {
                     this.categories.push({ label: response.Result[i].Name, value: response.Result[i].UUID });
                 }
             }, err => {
-                this.msgBox.ShowResponseMessage(err.status, 10);
+                this.msgBox.ShowResponseMessage(err.status);
 
                 if (err.status === 401) {
-                    this._sessionService.ClearSessionState();
+                    this._sessionService.clearSession();
                     setTimeout(() => {
                         this._router.navigate(['/membership/login'], { relativeTo: this._route });
                     }, 3000);
@@ -475,14 +579,15 @@ export class InventoryComponent implements OnInit {
         this.selectedCategoryUUID = selected.value;
 
         this.initFilters();
-        this.loadAvailableItems(1, 10);
+        this.loadAvailableItems(1);
     }
 
     loadAvailableItems(page?: number, pageSize?: number) {
-
+        console.log('inventory.components.ts loadAvailableItems  a');
         if (this.loadingProducts === true) {
             return;
         }
+        console.log('inventory.components.ts loadAvailableItems  b:');
         this.availableItemCount = 0;
         this.loadingProducts = true;
         this.productFilter.PageResults = true;
@@ -501,28 +606,55 @@ export class InventoryComponent implements OnInit {
         }
 
         res.subscribe(response => {
-
+            console.log('inventory.components.ts loadAvailableItems  response:',response);
             this.loadingProducts = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.availableItems = response.Result;
             this.availableItemCount = response.TotalRecordCount;
+           //this.inventoryItems = response.Result;
+           //this.totalInventoryItems = response.TotalRecordCount;
             this.initItems();
 
         }, err => {
             this.loadingProducts = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
             }
 
         });
+    }
+
+    loadAvailableItems$(page?: number, pageSize?: number): Observable<any> {
+
+        if (this.loadingProducts === true) {
+            return;
+        }
+        this.initFilters();
+        this.availableItemCount = 0;
+        this.loadingProducts = true;
+        this.productFilter.PageResults = true;
+        this.productFilter.PageSize = pageSize;
+        this.productFilter.StartIndex = page;
+
+        let res = null;
+        if (this.itemGroup === 'Equipment') {
+            if (this.selectedCategoryUUID === '') {
+                this.selectedCategoryUUID = 'all';
+            }
+            return this._equipmentService.getEquipment(this.selectedCategoryUUID, this.productFilter);
+
+        } 
+        
+        return this._productService.getProducts(this.productFilter);
+
     }
 
     initItems() {
@@ -558,17 +690,15 @@ export class InventoryComponent implements OnInit {
     }
 
     filterProductsByName(filter) {
+       
         this.nameFilter = filter;
-
-        if (this.nameFilter.length < 2) {
-            return;
-        }
-
+        console.log('inventory.compent.ts filterProductsByName filter:', filter);
         this.initFilters();
-
-        setTimeout(() => {
-            this.loadAvailableItems(1, 25);
-        }, 1000);
+       _.debounce(  
+        
+            this.loadAvailableItems(1, 25)
+           , 600);
+        
     }
 
     initFilters() {
@@ -577,7 +707,7 @@ export class InventoryComponent implements OnInit {
         let searchBy = 'UUIDTYPE';
 
         if (this.itemGroup !== 'Equipment') {
-            searchBy = 'CATEGORY';
+            searchBy = 'CATEGORYUUID';
         }
 
         let screen = new Screen();
@@ -609,7 +739,7 @@ export class InventoryComponent implements OnInit {
         this.processingRequest = true;
         // add to inventory
         const ii =  this.cloneItem(this.availableItems[prodIdx]);
-        ii.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+        ii.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
         ii.LocationUUID = this.selectedLocationUUID;
         ii.UUIDType = 'Item';
         ii.Quantity = 0;
@@ -623,7 +753,7 @@ export class InventoryComponent implements OnInit {
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -632,10 +762,10 @@ export class InventoryComponent implements OnInit {
             this.loadInventory(this.selectedLocationUUID, 1, 25); // not updating the list so reload for now.
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -688,24 +818,6 @@ export class InventoryComponent implements OnInit {
         return -1;
     }
 
-    findUOMIndex(uomUUID: string): number {
-        for (let i = 0; i < this.unitsOfMeasure.length; i++) {
-
-            if (this.unitsOfMeasure[i].UUID === uomUUID) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    getUOMName(uomUUID: string): string {
-        for (let i = 0; i < this.unitsOfMeasure.length; i++) {
-
-            if (this.unitsOfMeasure[i].UUID === uomUUID) {
-                return this.unitsOfMeasure[i].Name;
-            }
-        }
-        return '';
-
-    }
+  
+ 
 }

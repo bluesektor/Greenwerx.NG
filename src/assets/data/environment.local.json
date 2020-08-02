@@ -1,0 +1,8 @@
+{
+    "production": false,
+    "serviceUrl": "https://greenwerx.org/",
+    "name":"local",
+    "version": "POC",
+    "theme" : "default-theme",
+    "viewtype" :"home"
+}

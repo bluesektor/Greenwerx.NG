@@ -1,15 +1,13 @@
 ﻿import { Component, ViewChild, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { UserService } from '../../services/user.service';
-import { SessionService } from '../../services/session.service';
+import { UserService } from '../../services/user/user.service';
+import { SessionService } from '../../services/user/session.service';
 
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
 @Component({
 
     templateUrl: './users-validate.component.html',
-    providers: [CookieService, UserService, SessionService]
 })
 
 export class UsersValidateComponent implements OnInit {
@@ -18,15 +16,13 @@ export class UsersValidateComponent implements OnInit {
     validationCode: string;
     validating = true;
 
-
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+ 
     constructor(
         private _userService: UserService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _cookieService: CookieService,
         private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent
     ) {     }
 
     ngOnInit() {
@@ -44,19 +40,19 @@ export class UsersValidateComponent implements OnInit {
 
         if (!this.validationCode || this.validationCode.length === 0) {
 
-            this.msgBox.ShowMessage('error', 'Validation code is wrong!', 10);
+            this.msgBox.ShowMessage('error', 'Validation code is wrong!');
             this.validating = false;
             return;
         }
 
         if (!this.operation || this.operation.length === 0) {
-            this.msgBox.ShowMessage('error', 'operation is wrong!', 10);
+            this.msgBox.ShowMessage('error', 'operation is wrong!');
             this.validating = false;
             return;
         }
 
         if (!this.validationType || this.validationType.length === 0) {
-            this.msgBox.ShowMessage('error', 'operation type is wrong!', 10);
+            this.msgBox.ShowMessage('error', 'operation type is wrong!');
             this.validating = false;
             return;
         }
@@ -64,20 +60,20 @@ export class UsersValidateComponent implements OnInit {
         this._userService.validateUser( this.validationType, this.operation, this.validationCode ).subscribe(response => {
             this.validating = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 20);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage(response.Status, response.Message, 10);
+            this.msgBox.ShowMessage(response.Status, response.Message);
 
             let typeOperation = this.validationType + '_' + this.operation;
 
             switch (typeOperation.toLocaleLowerCase()) {
                     case 'mbr_mreg': // user validated email after registering.
-                        this.msgBox.ShowMessage('info', 'Account has been activated. You will be redirected to the login.', 10);
+                        this.msgBox.ShowMessage('info', 'Account has been activated. You will be redirected to the login.');
                         setTimeout(() => { this._router.navigate(['/membership/login'], { relativeTo: this._route }); }, 5000);
                     break;
                     case 'mbr_mdel': // membership oops/remove
-                        this.msgBox.ShowMessage('info', 'Your account has been deleted.', 10);
+                        this.msgBox.ShowMessage('info', 'Your account has been deleted.');
                         break;
                     case 'mbr_pwdr': // password reset
                         let url = '/users/changepassword/operation/' + this.operation + '/code/' + this.validationCode;
@@ -85,15 +81,15 @@ export class UsersValidateComponent implements OnInit {
                     break;
                     default:
                         // Invalid code.
-                        this.msgBox.ShowMessage('info', 'Invalid code.', 60);
+                        this.msgBox.ShowMessage('info', 'Invalid code.');
                 }
 
         }, err => {
             this.validating = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

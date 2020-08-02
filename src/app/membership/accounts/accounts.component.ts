@@ -6,13 +6,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../../common/messageboxes.component';
 import { BasicValidators } from '../../common/basicValidators';
-import { SessionService } from '../../services/session.service';
-import { AccordionModule } from 'primeng/primeng';
-import { CheckboxModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { SessionService } from '../../services/user/session.service';
+import { AccordionModule } from 'primeng';
+import { CheckboxModule } from 'primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 
-import { AccountService } from '../../services/account.service';
+import { AccountService } from '../../services/user/account.service';
 import { Account } from '../../models/account';
 
 
@@ -31,7 +31,6 @@ import { Account } from '../../models/account';
   width: 45% !important;
 }
   `],
-    providers: [AccountService, ConfirmationService, SessionService]
 })
 export class AccountsComponent implements OnInit {
 
@@ -63,14 +62,14 @@ export class AccountsComponent implements OnInit {
     availablePermissions: Node[];
     selectedPermissions: Node[];
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+    
     constructor(fb: FormBuilder,
         private _accountService: AccountService,
         private _confirmationService: ConfirmationService,
         private _sessionService: SessionService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute
+        ,private msgBox : MessageBoxesComponent) {
 
         this.formAccountDetail = fb.group({
             Name: ['', Validators.required],
@@ -87,7 +86,7 @@ export class AccountsComponent implements OnInit {
     ngOnInit() {
         this.loadingData = true;
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
 
@@ -121,14 +120,14 @@ export class AccountsComponent implements OnInit {
         res.subscribe(response => {
             this.loadingData = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             this.accounts = response.Result;
 
             for (const account of response.Result) {
-                if (account.UUID === this._sessionService.CurrentSession.userAccountUUID) {
+                if (account.UUID === this._sessionService.CurrentSession.AccountUUID) {
                     this.activeAccount = account;
 
                     this.accountDetail.UUID = account.UUID;
@@ -138,10 +137,10 @@ export class AccountsComponent implements OnInit {
             }
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -168,20 +167,20 @@ export class AccountsComponent implements OnInit {
             this.settingActiveAccount = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.activeAccount = Object.assign({}, this.accountDetail);
-            this._sessionService.CurrentSession.userAccountUUID = this.accountDetail.UUID.toString();
-            this._sessionService.SaveSessionState();
-            this.msgBox.ShowMessage('info', 'Default account updated.', 10);
+            this._sessionService.CurrentSession.AccountUUID = this.accountDetail.UUID.toString();
+            this._sessionService.saveSessionLocal();
+            this.msgBox.ShowMessage('info', 'Default account updated.');
 
         }, err => {
             this.settingActiveAccount = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -201,17 +200,17 @@ export class AccountsComponent implements OnInit {
             this.deletingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Account deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Account deleted.');
             this.loadAccountDropDown();
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -262,33 +261,33 @@ export class AccountsComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             // if account is created add the current user to it so it will load in the cbo box.
             if (this.newAccount) {
 
-                this.msgBox.ShowMessage('info', 'Account added.', 10);
+                this.msgBox.ShowMessage('info', 'Account added.');
                 this.accountDetail.UUID = response.Result.UUID;
                 this._accountService.addUserToAccount(this.accountDetail.UUID,
-                    this._sessionService.CurrentSession.userUUID).subscribe( sessionResponse => {
+                    this._sessionService.CurrentSession.UserUUID).subscribe( sessionResponse => {
 
                         if (sessionResponse.Code !== 200) {
-                            this.msgBox.ShowMessage(sessionResponse.Status, sessionResponse.Message, 10);
+                            this.msgBox.ShowMessage(sessionResponse.Status, sessionResponse.Message);
                             return false;
                         }
                         this.newAccount = false;
                         this.loadAccountDropDown();
                     });
             } else {
-                this.msgBox.ShowMessage('info', 'Account updated.', 10);
+                this.msgBox.ShowMessage('info', 'Account updated.');
             }
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -307,7 +306,7 @@ export class AccountsComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -315,10 +314,10 @@ export class AccountsComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -342,7 +341,7 @@ export class AccountsComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -350,10 +349,10 @@ export class AccountsComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -372,7 +371,7 @@ export class AccountsComponent implements OnInit {
             this.loadingData = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -380,10 +379,10 @@ export class AccountsComponent implements OnInit {
 
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -405,19 +404,19 @@ export class AccountsComponent implements OnInit {
                 this.loadingData = false;
                 this.showAccountUsers(this.accountDetail.UUID);
                 this.showNonAccountUsers(this.accountDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Users added.', 10);
+            this.msgBox.ShowMessage('info', 'Users added.');
 
         }, err => {
 
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -440,16 +439,16 @@ export class AccountsComponent implements OnInit {
             if (response.Code !== 200) {
                 this.showAccountUsers(this.accountDetail.UUID);
                 this.showNonAccountUsers(this.accountDetail.UUID);
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Users removed.', 10);
+            this.msgBox.ShowMessage('info', 'Users removed.');
         }, err => {
             this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

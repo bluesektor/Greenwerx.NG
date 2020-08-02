@@ -64,7 +64,7 @@ function decodeFill(el, index, count) {
 		return 'origin';
 	}
 
-	target = parseFloat(fill, 10);
+	target = parseFloat(fill);
 	if (isFinite(target) && Math.floor(target) === target) {
 		if (fill[0] === '-' || fill[0] === '+') {
 			target = index + target;

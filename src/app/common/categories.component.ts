@@ -9,10 +9,10 @@ import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
 import { Filter } from '../models/filter';
 import { Screen} from '../models/screen';
-import { SessionService } from '../services/session.service';
-import { AccordionModule } from 'primeng/primeng';
-import { PickListModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule, CheckboxModule } from 'primeng/primeng';
+import { SessionService } from '../services/user/session.service';
+import { AccordionModule } from 'primeng';
+import { PickListModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService, CheckboxModule } from 'primeng';
 import { CategoriesService } from '../services/categories.service';
 import { ProductService } from '../services/product.service';
 import { Category } from '../models/category';
@@ -21,7 +21,6 @@ import { Category } from '../models/category';
     selector: 'tm-category',
     templateUrl: './categories.component.html',
 
-    providers: [ProductService, ConfirmationService, SessionService, CategoriesService]
 })
 export class CategoriesComponent implements OnInit {
     @Input() categoryType: string;
@@ -38,7 +37,6 @@ export class CategoriesComponent implements OnInit {
    //  customCategoryType: string = '';
     categoryFilter: Filter = new Filter();
 
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
 
     constructor(fb: FormBuilder,
         private _productService: ProductService,
@@ -46,12 +44,14 @@ export class CategoriesComponent implements OnInit {
         private _sessionService: SessionService,
         private _categoriesService: CategoriesService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute,
+        private msgBox:MessageBoxesComponent
+) {
     }
 
     ngOnInit() {
 
-        if (!this._sessionService.CurrentSession.validSession) {
+        if (!this._sessionService.CurrentSession.ValidSession) {
             return;
         }
 
@@ -68,7 +68,7 @@ export class CategoriesComponent implements OnInit {
         const res = this._categoriesService.getCategories(this.categoryFilter);
         res.subscribe(response => {
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -82,10 +82,10 @@ export class CategoriesComponent implements OnInit {
             }
 
         }, err => {
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401 && err.statusText === 'Session expired.' ) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                   setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -134,11 +134,11 @@ export class CategoriesComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'Category deleted.', 10);
+            this.msgBox.ShowMessage('info', 'Category deleted.');
             const index = this.findSelectedIndex(this.category);
             // Here, with the splice method, we remove 1 object
             // at the given index.
@@ -146,10 +146,10 @@ export class CategoriesComponent implements OnInit {
             this.loadCategories();  // not updating the list so reload for now.
         }, err => {
             this.deletingData = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -166,7 +166,7 @@ export class CategoriesComponent implements OnInit {
         this.msgBox.closeMessageBox();
 
         if (this.category.AccountUUID === '' || this.category.AccountUUID === null ) {
-            this.category.AccountUUID = this._sessionService.CurrentSession.userAccountUUID;
+            this.category.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
         }
 
        this.processingRequest = true;
@@ -186,15 +186,15 @@ export class CategoriesComponent implements OnInit {
             this.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
             if (this.newCategory) {// add
-                this.msgBox.ShowMessage('info', 'Category added', 10);
+                this.msgBox.ShowMessage('info', 'Category added');
                 this.categories.push(response.Result);
             } else { // update
-                this.msgBox.ShowMessage('info', 'Category updated', 10);
+                this.msgBox.ShowMessage('info', 'Category updated');
                 this.categories[this.findSelectedIndex(this.category)] = this.category;
             }
             this.loadCategories();  // not updating the list so reload for now.
@@ -202,10 +202,10 @@ export class CategoriesComponent implements OnInit {
             this.category = null;
             this.displayDialog = false;
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

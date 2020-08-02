@@ -4,17 +4,17 @@
 import { Component, OnInit, ViewChild, EventEmitter } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/user/session.service';
 import { Setting } from '../models/setting';
 import { AdminService } from '../services/admin.service';
 import { AppService } from '../services/app.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
-import { DataTableModule, SharedModule, DialogModule, FileUploadModule } from 'primeng/primeng';
-import { ConfirmDialogModule, ConfirmationService, GrowlModule } from 'primeng/primeng';
+import { TableModule, SharedModule, DialogModule, FileUploadModule } from 'primeng';
+import { ConfirmDialogModule, ConfirmationService } from 'primeng';
+import { Api } from '../services/api';
 
 @Component({
     templateUrl: './tools.component.html',
-    providers: [AdminService, SessionService, AppService]
 
 })
 
@@ -50,39 +50,37 @@ export class ToolsComponent implements OnInit {
     validate = true;
     validateGlobally = false;
     scanResult: any[];
-
-    @ViewChild(MessageBoxesComponent) msgBox: MessageBoxesComponent;
-
+ 
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
-        private _toolsService: AdminService,
+       private _toolsService: AdminService,
         private _appService: AppService,
         private _confirmationService: ConfirmationService,
-        private _sessionService: SessionService) {
-
-        this.msgBox = new MessageBoxesComponent();
+        private _sessionService: SessionService
+        ,private msgBox : MessageBoxesComponent) {
+ 
 
     }
 
     ngOnInit() {
         this.dataType = '';
         this.loadDashboard();
-        this.baseUrl = this._appService.BaseUrl();
+        this.baseUrl = Api.url;
 
         this._appService.tableNames().subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.tableNames = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -92,16 +90,16 @@ export class ToolsComponent implements OnInit {
         this._appService.dataTypes().subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.dataTypes = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -110,6 +108,7 @@ export class ToolsComponent implements OnInit {
     }
 
     loadDashboard() {
+        
         this.processingRequest = true;
         this.msgBox.closeMessageBox();
         const res = this._toolsService.getToolsDashboard();
@@ -119,7 +118,7 @@ export class ToolsComponent implements OnInit {
             this.processingRequest = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
@@ -130,10 +129,10 @@ export class ToolsComponent implements OnInit {
         }, err => {
 
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -152,19 +151,19 @@ export class ToolsComponent implements OnInit {
             this.processingRequest = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', response.Message, 10);
+            this.msgBox.ShowMessage('info', response.Message);
             this.loadDashboard();
         }, err => {
 
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -184,7 +183,7 @@ export class ToolsComponent implements OnInit {
                 this.msgs.push({ severity: 'info', summary: 'Confirmed', detail: 'Databse restored' });
 
                 if (this.selectedDbBackup === '' ) {
-                    this.msgBox.ShowMessage('error', 'You must select one file to restore..', 10);
+                    this.msgBox.ShowMessage('error', 'You must select one file to restore..');
                     return false;
                 }
                 // var countDown = $selectedFiles.length;
@@ -204,19 +203,19 @@ export class ToolsComponent implements OnInit {
                     this.processingRequest = false;
 
                     if (response.Code !== 200) {
-                        this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                        this.msgBox.ShowMessage(response.Status, response.Message);
                         return false;
                     }
 
-                    this.msgBox.ShowMessage('info', 'Database restored.', 10);
+                    this.msgBox.ShowMessage('info', 'Database restored.');
 
 
                 }, err => {
                     this.processingRequest = false;
-                    this.msgBox.ShowResponseMessage(err.status, 10);
+                    this.msgBox.ShowResponseMessage(err.status);
 
                     if (err.status === 401) {
-                        this._sessionService.ClearSessionState();
+                        this._sessionService.clearSession();
                         setTimeout(() => {
                             this._router.navigate(['/membership/login'], { relativeTo: this._route });
                         }, 3000);
@@ -240,30 +239,30 @@ export class ToolsComponent implements OnInit {
             this.processingRequest = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            this.msgBox.ShowMessage('info', 'File imported.', 10);
+            this.msgBox.ShowMessage('info', 'File imported.');
 
 
         }, err => {
             this.processingRequest = false;
             if (err.status === 429) {
-                this._sessionService.ClearSessionState();
-                this.msgBox.ShowMessage('error', 'Too many requests being sent.', 10);
+                this._sessionService.clearSession();
+                this.msgBox.ShowMessage('error', 'Too many requests being sent.');
                 return;
             }
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
-                this.msgBox.ShowMessage('error', err.status + ' Session expired.', 10    );
+                this._sessionService.clearSession();
+                this.msgBox.ShowMessage('error', err.status + ' Session expired.');
 
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
             } else {
 
-                this.msgBox.ShowMessage('error', err.status + ' Failed to connect. Check your connection or try again later.', 10    );
+                this.msgBox.ShowMessage('error', err.status + ' Failed to connect. Check your connection or try again later.');
             }
         });
         this.processingRequest = false;
@@ -289,7 +288,7 @@ export class ToolsComponent implements OnInit {
             this.processingRequest = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.cipherResult = response.Result;
@@ -297,10 +296,10 @@ export class ToolsComponent implements OnInit {
 
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -331,16 +330,16 @@ export class ToolsComponent implements OnInit {
         res.subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.testResult = response.Message;
         }, err => {
             this.processingRequest = false;
-        this.msgBox.ShowResponseMessage(err.status, 10);
+        this.msgBox.ShowResponseMessage(err.status);
 
         if (err.status === 401) {
-            this._sessionService.ClearSessionState();
+            this._sessionService.clearSession();
             setTimeout(() => {
                 this._router.navigate(['/membership/login'], { relativeTo: this._route });
             }, 3000);
@@ -350,7 +349,7 @@ export class ToolsComponent implements OnInit {
 
     onBeforeSendFile(event) {
 
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + this._sessionService.CurrentSession.authToken);
+        event.xhr.setRequestHeader('Authorization', 'Bearer '+ Api.authToken);
     }
 
     onFileUpload( event ) {
@@ -360,7 +359,7 @@ export class ToolsComponent implements OnInit {
             currFile = file;
         }
         let result = JSON.parse( event.xhr.response);
-        this.msgBox.ShowMessage(result.Status, result.Message, 15);
+        this.msgBox.ShowMessage(result.Status, result.Message);
     }
 
     chkValidateClick(event) {
@@ -387,17 +386,17 @@ export class ToolsComponent implements OnInit {
         this._appService.scanForDuplicates(this.selectedTable).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.scanResult = response.Result;
             this.scanResultCount = this.scanResult.length;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -414,16 +413,16 @@ export class ToolsComponent implements OnInit {
         this._appService.searchTables(this.selectedTable, uuids).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
             this.searchResults = response.Result;
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
@@ -437,16 +436,16 @@ export class ToolsComponent implements OnInit {
         this._appService.deleteItem(this.selectedTable, recordUUID).subscribe(response => {
             this.processingRequest = false;
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message, 10);
+                this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.msgBox.ShowMessage('info', 'Record deleted', 15);
+            this.msgBox.ShowMessage('info', 'Record deleted');
         }, err => {
             this.processingRequest = false;
-            this.msgBox.ShowResponseMessage(err.status, 10);
+            this.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.ClearSessionState();
+                this._sessionService.clearSession();
                 setTimeout(() => {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);

@@ -2,18 +2,16 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Component, ElementRef, OnInit, HostListener } from '@angular/core';
-import { PanelMenuModule, MenuItem } from 'primeng/primeng';
-import { SessionService } from './services/session.service';
-import { Setting } from './models/setting';
-import { SettingsService } from './services/settings.service';
+import { PanelMenuModule, MenuItem } from 'primeng';
 import { AppService } from './services/app.service';
-import { CartDropdownComponent } from './store/cart.dropdown.component';
-
+import { SessionService } from './services/user/session.service';
+import { Setting } from './models/setting';
+import { SettingsService } from './services/settings/settings.service';
+import {CartDropdownComponent} from './store/cart.dropdown.component';
 @Component({
         selector: 'tm-navbar-admin',
         templateUrl: './navbar.admin.component.html',
 
-    providers: [AppService, SessionService]
 })
 export class NavBarAdminComponent implements OnInit {
 
@@ -48,19 +46,22 @@ export class NavBarAdminComponent implements OnInit {
     }
 
     constructor(
-       public  _sessionService: SessionService,
-        private _appService: AppService
+       
+      public  _sessionService: SessionService,
+       private _appService: AppService
     ) {
-
+        console.log('navbar.admin.component.ts constructor');
     }
 
     ngOnInit() {
+        console.log('navbar.admin.component.ts ngOnInit');
         this.loadSettings();
     }
 
     loadSettings() {
-
-        const res = this._appService.getDashboard('navbar_admin', '');
+        console.log('navbar.admin.component.ts loadSettings');
+ 
+        const res = this._appService.getDashboard('navbar_admin' );
 
         res.subscribe(response => {
 
@@ -70,6 +71,7 @@ export class NavBarAdminComponent implements OnInit {
             this.pageTitle = this.pageSettings.Title;
             this.sidePanelItems = this.initializeSidePanel(this.pageSettings.SideMenuItems);
         }, err => { });
+         
     }
 
     initializeSidePanel(navLinks: any[]) {
@@ -103,17 +105,12 @@ export class NavBarAdminComponent implements OnInit {
     }
 
     toggleUserDropDown() {
+        console.log('navbar.admin.component.ts toggleUserDropDown'); 
         this.userDropDownExpanded = !this.userDropDownExpanded;
-
-        if (this.userDropDownExpanded === true) {
-            // This was the only way I could get the menu to toggle (reload the object).
-            // I tried observables, emitters.. nothing worked.
-            this._sessionService.LoadSessionState();
-        }
     }
 
     toggleActive(index) {
-
+        console.log('navbar.admin.component.ts toggleActive');
         if (this.highlightedDiv !== index) {
             this.highlightedDiv = index;
         }

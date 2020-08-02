@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChartModule } from 'primeng/primeng';
+import { ChartModule } from 'primeng';
 
  import { GraphsComponent } from './graphs.component';
 

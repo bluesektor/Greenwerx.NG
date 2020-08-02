@@ -3,23 +3,22 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { CookieService } from 'angular2-cookie/services/cookies.service';
 
-import { CheckboxModule } from 'primeng/primeng';
 
-import { DataTableModule, SharedModule, DialogModule } from 'primeng/primeng';
+import { CheckboxModule } from 'primeng';
+
+import { TableModule, SharedModule, DialogModule } from 'primeng';
 
 import { PreventUnsavedChangesGuard } from '../../prevent-unsaved-changes-guard.service';
 import { MessageBoxesModule } from '../../common/messageboxes.module';
-import { CommontmModule } from '../../common/commontm.module';
+import { CommonModuleEx } from '../../common/common.moduleex';
 
-import { SessionService } from '../../services/session.service';
+import { SessionService } from '../../services/user/session.service';
 
 import { User } from '../../models/user';
 import { UserProfileComponent } from './profile.component';
 import { UsersComponent } from './users.component';
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../services/user/user.service';
 import { LoginComponent } from './login.component';
 import { LoginHelpComponent } from './login-help.component';
 import { ChangePasswordComponent } from './change-password.component';
@@ -31,10 +30,10 @@ import { UsersRoutingModule } from './users.routing';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        HttpModule,
-        CommontmModule,
+        
+        CommonModuleEx,
         CheckboxModule,
-        DataTableModule,
+        TableModule,
         SharedModule,
         DialogModule,
         RouterModule,
@@ -55,12 +54,6 @@ import { UsersRoutingModule } from './users.routing';
         UserProfileComponent,
         UsersComponent
     ],
-    providers: [
-        UserService,
-        PreventUnsavedChangesGuard,
-        CookieService,
-        SessionService
-    ]
 })
 export class UsersModule {
 
