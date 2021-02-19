@@ -94,9 +94,9 @@ export class CategoriesComponent implements OnInit {
         });
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, data) {
         this.newCategory = false;
-        this.category = this.cloneCategory(event.data); // to be updated in the dialog
+        this.category = this.cloneCategory(data);
         this.displayDialog = true;
     }
 
@@ -144,6 +144,7 @@ export class CategoriesComponent implements OnInit {
             // at the given index.
             this.categories.splice(index, 1);
             this.loadCategories();  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.deletingData = false;
             this.msgBox.ShowResponseMessage(err.status);
@@ -198,6 +199,7 @@ export class CategoriesComponent implements OnInit {
                 this.categories[this.findSelectedIndex(this.category)] = this.category;
             }
             this.loadCategories();  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.category = null;
             this.displayDialog = false;

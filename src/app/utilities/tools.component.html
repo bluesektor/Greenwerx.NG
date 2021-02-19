@@ -23,7 +23,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 <p-table [value]="databaseBackups" 
                              selectionMode="single"
                              [(selection)]="selectedDbBackup"
-                             (onRowSelect)="onDbBackupRowSelect($event)"
+                             
                              [paginator]="true" rows="15" [responsive]="true">
                              <ng-template pTemplate="header">
                                 <tr>
@@ -31,10 +31,10 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 </tr>
                             </ng-template>
 
-                            <ng-template pTemplate="body"  let-q="rowData" let-ri="rowIndex" >
-                                <tr>
+                            <ng-template pTemplate="body"   let-data >
+                                <tr (click)="onDbBackupRowSelect($event, data)">
                                     <td>
-                                        <div>{{q}}</div>
+                                        <div>{{data}}</div>
                                      </td>
                                     </tr>
 
@@ -43,7 +43,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             <ng-template pTemplate="footer">
                             <tr>
                                 <td >
-                                    {{selectedDbBackup}}
+                                  
                                     <div class="cell-block">
                                         <button *ngIf="!processingRequest" id="btnBackupDatabase" (click)="btnBackupDatabaseClick($event)" type="button" class="form-control" style="width:100px;float:right;margin-right: .3em;">
                                             Backup
@@ -55,7 +55,9 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                         </button>
                                     </div>
                                 </td>
-                               
+                            </tr>
+                            <tr>
+                                <td>  {{selectedDbBackup}}</td>
                             </tr>
                         </ng-template>
                       

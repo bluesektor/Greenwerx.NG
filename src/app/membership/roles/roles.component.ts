@@ -71,8 +71,8 @@ export class RolesComponent implements OnInit {
      @Output() onMoveToTarget: EventEmitter<any> = new EventEmitter();
 
     // ===--- Role Permissions Tab (2) ---===
-    availablePermissions: Node[];
-    selectedPermissions: Node[];
+    availablePermissions: Node[] = [];
+    selectedPermissions: Node[] = [];
     filterAvailablePermissions: Filter = new Filter();
     filterSelectedPermissions: Filter = new Filter();
 
@@ -201,6 +201,7 @@ export class RolesComponent implements OnInit {
 
            this.msgBox.ShowMessage('info', 'Role deleted.');
            this.loadRoleDropDown(); // not updating the list so reload for now.
+             //todo implement   this._cdr.detectChanges(); and remove the load function
 
         }, err => {
            this.deletingData = false;
@@ -269,6 +270,7 @@ export class RolesComponent implements OnInit {
                 this.msgBox.ShowMessage('info', 'Role updated.');
             }
             this.loadRoleDropDown(); // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
 
         }, err => {
             this.loadingData = false;

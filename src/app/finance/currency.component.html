@@ -14,18 +14,27 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          rows="25"
                          [responsive]="true"
                          [lazy]="true"
-                         (onLazyLoad)="lazyLoadCurrencyList($event)"
-                        >
-               
-                        <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                         (onLazyLoad)="lazyLoadCurrencyList($event)">
+                         <ng-template pTemplate="header">
                             <tr>
-                                <td> <ng-template let-listItem="rowData" pTemplate="body">
-                                    <img src="{{baseUrl}}{{data.Image}}" style="height:32px;" (click)="onRowSelect(data)" />
-                                    <label (click)="onRowSelect(data)"  >{{listItem.Name}}</label>
-                                </ng-template></td>
-                                 <td>{{data.Symbol}}</td>
-                                 <td>{{data.AssetClass}}</td>
-                                 <td>{{data.Test}}</td>
+                                <th style="width:64px !important;text-align: center !important;" > </th>
+                                <th>Name</th>
+                                <th>Symbol</th>
+                                <th>Asset Class</th>
+                                <th>Is Test</th>
+                                <th>Account</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                            <tr (click)="onRowSelect(data)" >
+                                <td style="width:64px !important;text-align: center !important;">  
+                                    <img src="{{data.Image}}" style="height:32px;"   />
+                                </td>
+                                <td>{{data.Name}}</td>
+                                <td>{{data.Symbol}}</td>
+                                <td>{{data.AssetClass}}</td>
+                                <td>{{data.Test}}</td>
+                                <td>{{data.AccountUUID}}</td>
                             </tr>
                         </ng-template>
 
@@ -36,32 +45,36 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                     <i class="fa fa-plus" style="color:green;"></i> Add
                                 </button>
                             </div>
-        
+        <!--
                             <div class="cell-block" style="width:25%">
                                 <p-checkbox [(ngModel)]="loadDefaultData" label="Defaults" (onChange)="loadDefaultsClick($event)" binary="loadDefaultData"></p-checkbox>
-                            </div>
+                            </div> -->
                         </ng-template>
             </p-table>
 
             <!--Dialog for  crud actions -->
             <p-dialog header="Currency Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
-                <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="currency">
-                    <div class="form-group">
-                        <label for="Name">Name</label>
-                        <input pInputText id="Name" [(ngModel)]="currency.Name" class="input-sm form-control" />
-                    </div>
+              
+                <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="currency !== null">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <input pInputText id="Name" [(ngModel)]="currency.Name" class="input-sm form-control" />
+                </div>
+                
                     <div class="form-group">
 
-                        <img src="{{baseUrl}}{{currency.Image}}" style="max-width:64px;max-width:64px;cursor:pointer; "  />
-                        <p-fileUpload  name="uploadedFiles[]" url="{{fileUploadUrl}}{{currency.UUID}}/{{currency.UUIDType}}"
-                                      id="{{currency.UUID}}"
-                                      (onBeforeSend)="onBeforeSendFile($event)"
-                                      (onUpload)="onImageUpload($event,currency.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
+                        <img src="{{currency.Image}}" style="max-width:64px;max-width:64px;cursor:pointer; "  />
+                        <br/>{{currency.Name}}
+                     <br/>
+                        <label type="button" id="lblImg{{currency.UUID}}"   for="img{{currency.UUID}}" 
+                            style="cursor: pointer;" >change</label>
+
+                            <input type="file" style="display:none;" id="img{{currency.UUID}}" name="img{{currency.UUID}}" 
+                            (change)="onImageUpload($event.target.files, currency)"
+                            accept="image/png, image/jpeg, image/jpg" />
                     </div>
-                  
                     <div *ngIf="currency.AssetClass == 'CRYPTO'" class="form-group">
                         <p-checkbox label="Use Test Environment" [(ngModel)]="currency.Test" binary="currency.Test"  ></p-checkbox>
-                       
                     </div>
                     <div class="form-group">
                           <p-dropdown appendTo="body" 
@@ -71,25 +84,22 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                    [(ngModel)]="currency.Symbol"
                                     [style]="{'width':'150px' }" 
                                     editable="true" 
-                                    placeholder="Select Symbol"
-                                  ></p-dropdown>
+                                    placeholder="Select Symbol" ></p-dropdown>
                     </div>
-
+                    <div class="form-group">
                         <div class="form-group">
-                            
-                            <div class="form-group">
-                                <p-dropdown appendTo="body"
-                                            (onChange)="onCboChangeAssetClass($event )"
-                                            (onBlur)="onCboLeaveAssetClass($event )"
-                                            [options]="assetClassOptions"
-                                            [(ngModel)]="currency.AssetClass"
-                                            [style]="{'width':'150px' }"
-                                            editable="true"
-                                            placeholder="Select Asset Class"></p-dropdown>
-                            </div>
-
+                            <p-dropdown appendTo="body"
+                                        (onChange)="onCboChangeAssetClass($event )"
+                                        (onBlur)="onCboLeaveAssetClass($event )"
+                                        [options]="assetClassOptions"
+                                        [(ngModel)]="currency.AssetClass"
+                                        [style]="{'width':'150px' }"
+                                        editable="true"
+                                        placeholder="Select Asset Class"></p-dropdown>
                         </div>
                     </div>
+                
+                </div>
                 <p-footer>
                     <div style="width:100%;" class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="save()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>

@@ -4,11 +4,12 @@
 import { Component, OnInit, ViewChild, Input, ElementRef  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TableModule, SharedModule, DialogModule, AccordionModule, SelectItem, DropdownModule,
-         InputSwitchModule, FileUploadModule, Table} from 'primeng';
+         InputSwitchModule, FileUploadModule,  Table} from 'primeng';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { SessionService } from '../services/user/session.service';
 import { EquipmentService } from '../services/equipment.service';
+import {ImageService} from '../services/image.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { InventoryItem } from '../models/inventory';
 import { InventoryService } from '../services/inventory.service';
@@ -17,6 +18,8 @@ import { GeoService } from '../services/geo.service';
 import { ProductService } from '../services/product.service';
 import { Location } from '../models/location';
 import { UnitOfMeasure } from '../models/unitofmeasure';
+import { ServiceResult } from '../models/serviceresult';
+import {GetImageThumbPipe } from '../common/pipes/image.pipe';
 import {Api} from '../services/api';
 import {GetUOMPipe} from '../common/pipes/uom.pipe';
 import * as _ from 'lodash';
@@ -25,6 +28,7 @@ import { fromEvent,timer , Observable  } from 'rxjs';
 
 import { delayWhen, map,  debounceTime,
    distinctUntilChanged,switchMap, retryWhen, startWith,tap } from 'rxjs/operators';
+import { HttpHeaders } from '@angular/common/http';
 
 @Component({
     selector: 'pm-inventory',
@@ -74,13 +78,14 @@ export class InventoryComponent implements OnInit {
     dlgRows = 10;
 
     @ViewChild('txtSearch', {static: false}) txtSearchInput: ElementRef;
-
-     selectedCategoryUUID = '';
-     availableItems: InventoryItem[];
-     productFilter: Filter = new Filter();
-     availableItemCount = 0;
-     loadingProducts = false;
-     nameFilter = '';
+    httpHeaders:HttpHeaders;
+    header:any;
+    selectedCategoryUUID = '';
+    availableItems: InventoryItem[];
+    productFilter: Filter = new Filter();
+    availableItemCount = 0;
+    loadingProducts = false;
+    nameFilter = '';
 
     equipment: any[] = [
         { 'name': 'Select one...', 'value': '' },
@@ -103,18 +108,21 @@ export class InventoryComponent implements OnInit {
         private _productService: ProductService,
         private _inventoryService: InventoryService,
         private _sessionService: SessionService,
-        private _unitsOfMeasureService: UnitsOfMeasureService
+        private _unitsOfMeasureService: UnitsOfMeasureService,
+        private _imageService: ImageService
         ,private msgBox : MessageBoxesComponent
     ) {
-       
-        this.fileUploadUrl = Api.url + 'api/File/Upload/';
     }
+ 
 
     imageUrl = '';
     imageUrlTmb = '';
 
     fileUploadUrl = '';
     uploadedFiles: any[] = [];
+
+  
+
 
     ngOnInit() {
         console.log('inventory.component.ts ngOnInit');
@@ -158,8 +166,8 @@ export class InventoryComponent implements OnInit {
     }
 
     onBeforeSendFile(event) {
-
-        event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
+        console.log('onBeforeSendFile Api.authToken:', Api.authToken);
+       // event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
     }
 
     onCboChangeUOM(event, itemUUID) {
@@ -220,16 +228,26 @@ export class InventoryComponent implements OnInit {
         });
     }
 
-    onImageUpload(event, productUUID) {
-        let currFile;
-        for (const file of event.files) {
-            this.uploadedFiles.push(file);
-            currFile = file;
-        }
+    onImageUpload(files: FileList, inventoryItem) {
+        const formData = new FormData();
+       
+        let currFile = files.item(0);
+        console.log(currFile);
+        this._imageService.uploadImage(currFile, inventoryItem.UUID ,'InventoryItem')
+            .subscribe(data =>{
+                const response = data as ServiceResult;
 
-        const idx = this.findInventoryItemIndex(productUUID);
-        this.inventoryItems[idx].Image = Api.url + 'Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
+                if (response.Code !== 200) {
+                    this.msgBox.ShowMessage(response.Status, response.Message);
+                    return false;
+                }
 
+                console.log('image upload response:',  response.Result);
+                //this.images.push(response.Result);
+               // this.selectedProfile.Image =
+               inventoryItem.Image = response.Result.ImageThumb;
+
+        });
     }
 
     cboItemTypeChange(type) {
@@ -442,6 +460,7 @@ console.log('inventory.component.ts onEditTemplateValue  this.inventoryItems[inv
                 editIndex = this.findInventoryItemIndex(productUUID);
                 this.inventoryItems.splice(editIndex, 1);
                 this.loadInventory(this.selectedLocationUUID, 1, 25); // not updating the list so reload for now.
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
             });
         }
     }
@@ -760,6 +779,7 @@ console.log('inventory.component.ts onEditTemplateValue  this.inventoryItems[inv
             this.availableItems.splice(prodIdx, 1);   // remove from local availableItems.
             this.inventoryItems.push(ii); // add to inventory locally
             this.loadInventory(this.selectedLocationUUID, 1, 25); // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.processingRequest = false;
             this.msgBox.ShowResponseMessage(err.status);

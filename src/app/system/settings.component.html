@@ -8,7 +8,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 <p-table [value]="settings"
              selectionMode="single"
              [(selection)]="setting"
-             (onRowSelect)="onRowSelect($event)" 
+            
                [lazy]="true"
                 (onLazyLoad)="lazyLoadSettingsList($event)"
               [totalRecords]="totalSettings"
@@ -26,7 +26,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 </tr>
              </ng-template>
              <ng-template pTemplate="body" let-setting>
-                <tr>
+                <tr  (click)="onRowSelect($event, setting)" >
                     <td>{{setting.Name}}</td>
                     <td>{{setting.Value}}</td>
                     <td>{{setting.Type}}</td>

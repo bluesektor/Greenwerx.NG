@@ -7,7 +7,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
 <p-table [value]="categories"
              selectionMode="single"
              [(selection)]="category"
-             (onRowSelect)="onRowSelect($event)" [paginator]="true" rows="15" [responsive]="true">
+            [paginator]="true" rows="15" [responsive]="true">
     
     <ng-template pTemplate="header">
         <tr>
@@ -16,7 +16,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
      </ng-template>
 
      <ng-template pTemplate="body" let-category>
-        <tr>
+        <tr   (click)="onRowSelect($event, category)" >
             <td>{{category.Name}}</td>
         </tr>
     </ng-template>

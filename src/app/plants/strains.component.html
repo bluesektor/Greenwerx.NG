@@ -34,7 +34,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             <p-table [value]="strains"
                          selectionMode="single"
                          [(selection)]="selectedStrain"
-                         (onRowSelect)="onRowSelect($event)"
+                       
                          [paginator]="true"
                          rows="25"
                          [loading]="loadingData"
@@ -44,7 +44,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [totalRecords]="totalRecords">
               
                 <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
-                    <tr>
+                    <tr (click)="onRowSelect($event, data)">
                         <td>{{data.Name}}</td>
                     </tr>
                 </ng-template>
@@ -83,6 +83,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             (completeMethod)="filterAccounts($event)" [size]="30"
                             [minLength]="1" placeholder="Hint: type 'v' or 'f'" 
                             [dropdown]="true" (onDropdownClick)="handleAccountDropdownClick($event)"
+                            [(ngModel)]="selectedAccount"
                             (onSelect)="onSelectAccount($event)" >
                         </p-autoComplete>
                     </div>
@@ -113,13 +114,13 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     
                 </div>
-                <ng-template pTemplate="footer">
+                <p-footer>
                     <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="saveStrain()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
                         <button type="button" style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
                         <button *ngIf="!newStrain" type="button" style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="onClickDeleteStrain()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>
                     </div>
-                </ng-template>
+                </p-footer>
             </p-dialog>
 
         </div>

@@ -37,8 +37,9 @@ import { PayOptionsComponent } from './payoptions.component';
 import { FinanceModule } from '../finance/finance.module';
 import { AddressComponent } from './address.component';
 
-
+import {PipesModule} from '../common/pipes/pipes.module';
 import {VendorsExComponent} from './vendors.component';
+import { DialogsModule } from '../common/dialogs/dialogs.module';
  
 @NgModule({
     imports: [
@@ -62,7 +63,9 @@ import {VendorsExComponent} from './vendors.component';
         AccordionModule,
         DropdownModule,
        StoreRoutingModule,
-        MessageBoxesModule
+        MessageBoxesModule,
+        PipesModule,
+        DialogsModule
 
     ]
     ,

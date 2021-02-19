@@ -1,4 +1,5 @@
-﻿.ng-valid[required], .ng-valid.required  {
+﻿
+.ng-valid[required], .ng-valid.required  {
   border-left: 5px solid #42A948; /* green */
 }
 .ng-touched.ng-invalid:not(form)  {
@@ -9,6 +10,77 @@
     display:inline-block;
 }
 
+.selectedRow{
+  background-color: #42A948;
+}
+.unselectedRow{
+  background-color: white;
+}
+
+
+.scroll-content{
+  margin-bottom: 0 !important;
+}
+//Horizontal Render
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+
+/* Create three equal columns that sits next to each other  */
+.column {
+  flex: 33%;
+  padding: 0 4px;
+}
+
+.column img {
+  margin-top: 8px;
+  vertical-align: middle;
+}
+
+.container {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+/* Bottom left text  */
+.bottom-left {
+  position: absolute;
+  bottom: 8px;
+  left: 16px;
+}
+
+/* Top left text */
+.top-left {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+}
+
+/* Top right text */
+.top-right {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+}
+
+/* Bottom right text  */
+.bottom-right {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+}
+
+/* Centered text */
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color:yellow;
+}
 
 .box900x430{width:900px; height:430px; background:url(../images/content_bg.png) 0 0 no-repeat; padding:30px 34px 31px 47px; position:relative}
 

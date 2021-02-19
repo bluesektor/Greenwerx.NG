@@ -8,10 +8,12 @@ import { CheckboxModule, FileUploadModule, SelectItem, DropdownModule, InputSwit
 import { SessionService } from '../services/user/session.service';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { TableModule, SharedModule, DialogModule, AccordionModule } from 'primeng';
+import {ServiceResult} from '../models/serviceresult';
 import { Filter } from '../models/filter';
 import { Screen } from '../models/screen';
 import { Currency } from '../models/currency';
 import { FinanceService } from '../services/finance.service';
+import {ImageService} from '../services/image.service';
 import { AppService } from '../services/app.service';
 import { Node } from '../models/node';
 import {Api} from '../services/api';
@@ -45,7 +47,8 @@ export class CurrencyComponent implements OnInit {
         private _appService: AppService,
         private _sessionService: SessionService,
         private _currencyService: FinanceService
-        ,private msgBox : MessageBoxesComponent) {
+        ,private msgBox : MessageBoxesComponent,
+        private _imageService:ImageService) {
     }
 
     ngOnInit() {
@@ -65,10 +68,8 @@ export class CurrencyComponent implements OnInit {
         this.processingRequest = true;
 
         const filter = new Filter();
-        filter.PageResults = true;
-        filter.StartIndex = page;
-        filter.PageSize = pageSize;
-
+     
+/*
         if (this.loadDefaultData === false) {
             const screen = new Screen();
             screen.Command = 'SEARCH!BY';
@@ -88,7 +89,11 @@ export class CurrencyComponent implements OnInit {
             screen.Value = 'system.default.account';
             filter.Screens.push(screen);
         }
-
+        */
+        filter.PageResults = true;
+        filter.StartIndex = page;
+        filter.PageSize = pageSize;
+        
         const res = this._currencyService.getCurrencies(filter);
         res.subscribe(response => {
             this.displayDialog = false;
@@ -120,9 +125,9 @@ export class CurrencyComponent implements OnInit {
 
     showDialogToAdd() {
         this.newCurrency = true;
-        this.currency = null;
-        this.currency = new Currency();
-        this.currency.Image = '/Content/Default/Images/add.png';
+        //this.currency = null;
+         this.currency = new Currency();
+       // this.currency.Image = '/Content/Default/Images/add.png';
         this.displayDialog = true;
     }
 
@@ -162,6 +167,7 @@ export class CurrencyComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1);
                 this.loadCurrencies(1, 25); // not updating the list so reload for now.
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
                 this.msgBox.ShowMessage('info', 'Currency deleted.');
             }, err => {
                 this.processingRequest = false;
@@ -208,6 +214,7 @@ export class CurrencyComponent implements OnInit {
             this.currency = null;
             this.newCurrency = false;
             this.loadCurrencies(1, 25); // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.currency = null;
             this.displayDialog = false;
@@ -229,20 +236,26 @@ export class CurrencyComponent implements OnInit {
         event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken);
     }
 
-    onImageUpload(event, itemUUID) {
-        let currFile;
-        for (const file of event.files) {
-            this.uploadedFiles.push(file);
-            currFile = file;
-        }
+    onImageUpload(files: FileList, currency) {
+        const formData = new FormData();
+       
+        let currFile = files.item(0);
+        console.log(currFile);
+        this._imageService.uploadImage(currFile, currency.UUID ,'Currency')
+            .subscribe(data =>{
+                const response = data as ServiceResult;
 
+                if (response.Code !== 200) {
+                    this.msgBox.ShowMessage(response.Status, response.Message);
+                    return false;
+                }
 
-        if (this.newCurrency === true) {
-            const idx = this.getItemIndex(itemUUID);
-            this.listData[idx].Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
-        } else {
-            this.currency.Image = '/Content/Uploads/' + this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
-        }
+                console.log('image upload response:',  response.Result);
+                //this.images.push(response.Result);
+               // this.selectedProfile.Image =
+               currency.Image = response.Result.ImageThumb;
+
+        });
     }
 
     onTabShow(e) {

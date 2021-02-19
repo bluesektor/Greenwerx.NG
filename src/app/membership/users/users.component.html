@@ -4,10 +4,10 @@
 <p-table [value]="users" 
              selectionMode="single" 
              [(selection)]="selectedUser" 
-             (onRowSelect)="onRowSelect($event)" [paginator]="true" rows="15" [responsive]="true">
+            [paginator]="true" rows="15" [responsive]="true">
   
              <ng-template pTemplate="header">
-                <tr>
+                <tr  >
                     <th>Name</th>
                     <th>Email</th>
                     <th>Approved</th>
@@ -15,10 +15,10 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
-                <tr>
+                <tr  (click)="onRowSelect($event, data)">
                     <td>{{data.Name}}</td>
                      <td>{{data.Email}}</td>
-                     <td>{{data.EmApprovedail}}</td>
+                     <td>{{data.Approved}}</td>
                      <td>{{data.Banned}}</td>
                 </tr>
             </ng-template>
@@ -42,6 +42,12 @@
             <label for="Email">Email</label>
            <input pInputText id="Email" [(ngModel)]="user.Email"  class="input-sm form-control" />
         </div>
+        <!--
+        <div class="form-group">
+            <label for="Password">Password</label>
+           <input type="password" pInputText id="Password" [(ngModel)]="user.Password"  class="input-sm form-control" />
+        </div>
+    -->
        
         <div class="form-group">
             <p-checkbox [(ngModel)]="user.Approved"  id="Approved" label="Approved" binary="true" ></p-checkbox>
@@ -50,11 +56,11 @@
             <p-checkbox [(ngModel)]="user.Banned" id="Banned" label="Banned" binary="true"></p-checkbox>
         </div>
     </div>
-    <ng-template pTemplate="footer">
+    <p-footer>
         <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
             <button type="button"  style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="save()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
             <button type="button"  style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
             <button type="button"  style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="delete()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>
         </div>
-        </ng-template>
+    </p-footer>
 </p-dialog>

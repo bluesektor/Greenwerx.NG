@@ -37,7 +37,6 @@ import {Api} from '../services/api';
         './checkout.component.css'
     ],
     encapsulation: ViewEncapsulation.None,
-    providers: [SessionService, FinanceService, AppService, StoreService, UserService]
 })
 
     //   See install component for example

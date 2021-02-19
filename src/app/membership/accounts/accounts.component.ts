@@ -14,6 +14,7 @@ import { ConfirmDialogModule, ConfirmationService } from 'primeng';
 
 import { AccountService } from '../../services/user/account.service';
 import { Account } from '../../models/account';
+import {Filter} from '../../models/filter';
 
 
 @Component({
@@ -115,7 +116,11 @@ export class AccountsComponent implements OnInit {
     // ===--- Top Menu Bar ---===
 
     loadAccountDropDown() {
-        const res = this._accountService.getAccounts();
+
+        //todo look at Locations click the row for the dialog and the accounts are loaded in cbo
+        const filter = new Filter();
+        filter.PageResults = false;
+        const res = this._accountService.getAccounts(filter);
 
         res.subscribe(response => {
             this.loadingData = false;
@@ -123,7 +128,6 @@ export class AccountsComponent implements OnInit {
                 this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-
             this.accounts = response.Result;
 
             for (const account of response.Result) {
@@ -145,7 +149,6 @@ export class AccountsComponent implements OnInit {
                     this._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
             }
-
         });
     }
 

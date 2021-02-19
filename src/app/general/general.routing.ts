@@ -6,12 +6,14 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { GeneralComponent } from './general.component';
 import { CategoriesComponent } from './categories.component';
+import {AttributesComponent} from './attributes.component';
 import { UnitsOfMeasureComponent } from './unitsofmeasure.component';
 
 
 const generalRoutes: Routes = [
     { path: 'measures', component: UnitsOfMeasureComponent },
     { path: 'categories', component: CategoriesComponent },
+    { path: 'attributes', component: AttributesComponent },
     { path: '', component: GeneralComponent }
 ];
 

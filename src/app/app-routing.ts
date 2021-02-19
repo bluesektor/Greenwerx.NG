@@ -21,7 +21,7 @@ const routes: Routes = [
   { path: 'membership', loadChildren: 'src/app/membership/users/users.module#UsersModule' },
   { path: 'assets', loadChildren: 'src/app/store/store.module#StoreModule' },
   { path: 'assets', loadChildren: 'src/app/plants/plants.module#PlantsModule' },
-  { path: 'assets', loadChildren: 'src/app/inventory/inventory.module#InventoryModule' },
+  { path: 'store', loadChildren: 'src/app/inventory/inventory.module#InventoryModule' },
   { path: 'assets', loadChildren: 'src/app/geo/geo.module#GeoModule' },
   { path: 'store', loadChildren: 'src/app/store/store.module#StoreModule' },
   { path: 'events', loadChildren: 'src/app/events/events.module#EventsModule' },

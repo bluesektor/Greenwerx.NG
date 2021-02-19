@@ -10,10 +10,10 @@ import { Screen } from '../models/screen';
 @Injectable()
 export class AdminService   {
 
-    constructor( private api: Api ) {
+    constructor( public api: Api ) {
   
     }
-
+   
     addSetting(setting) {
         return this.api.invokeRequest('POST', 'api/Apps/Settings/Add',  setting);
     }

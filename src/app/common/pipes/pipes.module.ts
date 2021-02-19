@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import {GetUOMPipe} from './uom.pipe';
+import {GetLargeImagePipe} from './image.pipe';
+ import {GetImageThumbPipe} from './image.pipe';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -10,8 +13,8 @@ import {GetUOMPipe} from './uom.pipe';
    
     TranslateModule.forChild()
   ],
-  declarations: [GetUOMPipe ],
-  exports: [GetUOMPipe ]
+  declarations: [GetUOMPipe,GetLargeImagePipe,GetImageThumbPipe ],  
+  exports: [GetUOMPipe,GetLargeImagePipe,GetImageThumbPipe ]  
 })
 export class PipesModule {}
 

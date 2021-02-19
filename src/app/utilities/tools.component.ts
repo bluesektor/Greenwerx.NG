@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { SessionService } from '../services/user/session.service';
@@ -54,12 +54,13 @@ export class ToolsComponent implements OnInit {
     constructor(
         private _router: Router,
         private _route: ActivatedRoute,
-       private _toolsService: AdminService,
+        private _toolsService: AdminService,
         private _appService: AppService,
         private _confirmationService: ConfirmationService,
         private _sessionService: SessionService
-        ,private msgBox : MessageBoxesComponent) {
- 
+        ,private msgBox : MessageBoxesComponent,
+        private _cdr: ChangeDetectorRef) {
+            
 
     }
 
@@ -123,6 +124,7 @@ export class ToolsComponent implements OnInit {
             }
 
             this.databaseBackups = response.Result.Backups;
+            console.log('tools.component.ts loadDashboard this.databaseBackups :',this.databaseBackups );
             this.defaultDatabase = response.Result.DefaultDatabase;
             this.importFiles = response.Result.ImportFiles; //  (ngModelChange)="cboImportFileChange($event)"
 
@@ -156,7 +158,9 @@ export class ToolsComponent implements OnInit {
             }
 
             this.msgBox.ShowMessage('info', response.Message);
-            this.loadDashboard();
+            this.databaseBackups.push(response.Result);
+            this._cdr.detectChanges();
+          //  this.loadDashboard();
         }, err => {
 
             this.processingRequest = false;
@@ -225,7 +229,7 @@ export class ToolsComponent implements OnInit {
         });
     }
 
-    onDbBackupRowSelect(file) {
+    onDbBackupRowSelect(event, file) {
         this.selectedDbBackup = file;
     }
 

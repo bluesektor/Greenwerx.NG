@@ -19,10 +19,10 @@ export class FinanceService   {
     constructor(private api: Api) {
     }
     getPriceRule(priceRuleCode: string) {
-        return this.api.invokeRequest('GET', 'api/Finance/PriceRules/' + priceRuleCode);
+        return this.api.invokeRequest('POST', 'api/Finance/PriceRules/' + priceRuleCode);
     }
     getPriceRules(filters?: Filter[]) {
-        return this.api.invokeRequest('GET', 'api/Finance/PriceRules/' ,filters);
+        return this.api.invokeRequest('POST', 'api/Finance/PriceRules/' ,filters);
     }
 
 
@@ -84,7 +84,7 @@ export class FinanceService   {
     }
 
     getFinanceAccountTransactions(filter?: Filter) {
-        return this.api.invokeRequest('GET', 'api/Finance/Accounts/Transactions/' ,filter );
+        return this.api.invokeRequest('POST', 'api/Finance/Accounts/Transactions/' ,filter );
     }
 
     deleteFinanceAccountTransaction(financeAccountUUID: string) {
@@ -100,11 +100,11 @@ export class FinanceService   {
     }
 
     getFinanceAccounts(filter?: Filter) {
-        return this.api.invokeRequest('GET', 'api/Finance/Accounts/' ,filter);
+        return this.api.invokeRequest('POST', 'api/Finance/Accounts/' ,filter);
     }
 
     getPaymenOptions() {
-        return this.api.invokeRequest('GET', 'api/Finance/PaymentOptions');
+        return this.api.invokeRequest('POST', 'api/Finance/PaymentOptions');
     }
 
     deleteFinanceAccount(financeAccountUUID: string) {
@@ -120,18 +120,18 @@ export class FinanceService   {
     }
 
     getCurrencies(filter?: Filter) {
-        return this.api.invokeRequest('GET', 'api/Finance/Currency' ,filter);
+        return this.api.invokeRequest('POST', 'api/Finance/Currency' ,filter);
     }
 
     getCurrency(name: string) {
-        return this.api.invokeRequest('GET', 'api/Finance/Currency/' + name);
+        return this.api.invokeRequest('POST', 'api/Finance/Currency/' + name);
     }
 
     getCurrencySymbols(filter?: Filter ) {
-        return this.api.invokeRequest('GET', 'api/Finance/Currency/Symbols');
+        return this.api.invokeRequest('POST', 'api/Finance/Currency/Symbols');
     }
     getAssetClasses(filter?: Filter) {
-        return this.api.invokeRequest('GET', 'api/Finance/AssetClasses');
+        return this.api.invokeRequest('POST', 'api/Finance/AssetClasses');
     }
 
 

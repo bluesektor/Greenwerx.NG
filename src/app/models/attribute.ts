@@ -3,10 +3,10 @@ import { Node } from './node';
 
 export class Attribute extends Node {
 
-    ImageThumb: string;
-   Value: string;
+    Image: string;
+    Value: string;
 
-   ValueType: string;
+    ValueType: string;
 
     ReferenceUUID: string;
 

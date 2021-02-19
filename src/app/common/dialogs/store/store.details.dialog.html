@@ -1,0 +1,35 @@
+<div style="width:400px;">
+  <app-messageboxes></app-messageboxes>
+  <h2 mat-dialog-title>{{selectedStore.Name}}</h2>
+  <mat-dialog-content class="mat-typography">
+    <div *ngIf="selectedStore.Address1  && selectedStore.Address1 !== ''">
+      <label>{{selectedStore.Address1}}</label><br/>
+      <label *ngIf="selectedStore.Address2 !== ''">{{selectedStore.Address2}}</label><br/>
+      <label>{{selectedStore.City}}, {{selectedStore.State}}  {{selectedStore.Postal}}</label><br/>
+
+      <img  [src]="selectedStore.Image | getImageThumbPipe: 'store'" [alt]="selectedStore.Name"   class="p-shadow-4"
+                            style="height: 32px;width: 64-px;" /> 
+      <br/>
+      <!--
+        todo pull these from attributes table
+       
+        <label>{{selectedStore.Phone}}</label><br/>
+          <label>{{selectedStore.Email}}</label><br/>
+
+          social media links
+
+          Hours of Operation
+          Mon – Sat: 8am – 10pm
+          Sun: 8am – 8pm
+          map to location
+          -->
+    </div>
+
+    
+  </mat-dialog-content>
+  <mat-dialog-actions align="center">
+    <button style="padding-right: 15px;" mat-button mat-dialog-close>Close</button>
+    &nbsp;
+    <button *ngIf="validSession === true" mat-button [mat-dialog-close]="true" cdkFocusInitial>Set as Default</button>
+  </mat-dialog-actions>
+</div>

@@ -192,6 +192,7 @@ export class StrainsComponent implements OnInit {
             // at the given index.
             this.strains.splice(index, 1);
             this.loadStrains(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
 
         }, err => {
             this.deletingData = false;
@@ -220,7 +221,7 @@ export class StrainsComponent implements OnInit {
         } else {
             const screen = new Screen();
             screen.Command = 'SearchBy';
-            screen.Field = 'VarietyUUID';
+            screen.Field = 'CategoryUUID';
             screen.Value = categoryUUID;
             filter.Screens.push(screen);
         }
@@ -266,11 +267,12 @@ export class StrainsComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, data) {
         this.newStrain = false;
-        this.selectedStrain = this.cloneStrain(event.data);
+        this.selectedStrain = this.cloneStrain(data);
 
         if ( !BasicValidators.isNullOrEmpty(  this.selectedStrain.BreederUUID)) {
+            console.log('strains.component.ts onRowSelect this.selectedStrain.BreederUUID:',this.selectedStrain.BreederUUID);
             // get the acount name. todo add this to the service when retrieving the record.
             this._accountService.getAccount(this.selectedStrain.BreederUUID).subscribe(response => {
 
@@ -338,6 +340,7 @@ export class StrainsComponent implements OnInit {
                 this.strains[this.findSelectedIndex(this.selectedStrain)] = this.selectedStrain;
             }
             this.loadStrains(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.loadingData = false;
             this.msgBox.ShowResponseMessage(err.status);

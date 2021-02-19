@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, ViewChild, OnInit, Output, EventEmitter, ElementRef } from '@angular/core';
+import { Component, ViewChild, OnInit, Output, EventEmitter, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
@@ -20,7 +20,6 @@ import { Category } from '../models/category';
 @Component({
     templateUrl: './departments.component.html',
 
-    providers: [ProductService, ConfirmationService, SessionService, CategoriesService]
 })
 export class DepartmentsComponent implements OnInit {
 
@@ -41,7 +40,8 @@ export class DepartmentsComponent implements OnInit {
         private _sessionService: SessionService,
         private _categoriesService: CategoriesService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute,
+        private _cdr:ChangeDetectorRef) {
     }
 
     ngOnInit() {
@@ -58,7 +58,7 @@ export class DepartmentsComponent implements OnInit {
         const screen = new Screen();
         screen.Command = 'SearchBy';
         screen.Field = 'CategoryType';
-        screen.Value = 'Store.Department';
+        screen.Value = 'Store.Department';  
         filter.Screens.push(screen);
 
 
@@ -84,9 +84,9 @@ export class DepartmentsComponent implements OnInit {
         });
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, category) {
         this.newCategory = false;
-        this.category = this.cloneCategory(event.data); // to be updated in the dialog
+        this.category = this.cloneCategory(category); // to be updated in the dialog
         this.displayDialog = true;
     }
 
@@ -133,7 +133,8 @@ export class DepartmentsComponent implements OnInit {
             // Here, with the splice method, we remove 1 object
             // at the given index.
             this.categories.splice(index, 1);
-            this.loadCategories(); // not updating the list so reload for now.
+            this.loadCategories(); // not updating the list so reload for now
+              //todo implement   this._cdr.detectChanges(); and remove the load function.
 
         }, err => {
             this.deletingData = false;
@@ -189,7 +190,8 @@ export class DepartmentsComponent implements OnInit {
                 this.msgBox.ShowMessage('info', 'Department updated');
                 this.categories[this.findSelectedIndex(this.category)] = this.category;
             }
-            this.loadCategories(); // not updating the list so reload for now.
+
+           this._cdr.detectChanges();
         }, err => {
             this.category = null;
             this.displayDialog = false;

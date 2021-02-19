@@ -4,5 +4,8 @@
     "name":"local",
     "version": "POC",
     "theme" : "default-theme",
-    "viewtype" :"home"
+    "viewtype" :"home",
+    "appid" : "gwxlcl",
+    "defaultLocationUUID" : "13a1863abe834627847563a17e6f4f87",
+    "defaultAccountUUID" : "ec8664adfdf345c29b555c3c47fd0498"
 }

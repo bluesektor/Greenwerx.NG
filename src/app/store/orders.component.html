@@ -17,28 +17,23 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          (onLazyLoad)="lazyLoadOrderList($event)">
                 <ng-template pTemplate="header">
                     <tr>
-                    <th field="Name" header="Name" >
-                        <ng-template let-listItem="rowData" pTemplate="body">
-                            <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                            <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                        </ng-template>
-                    </th>
-                    <th field="CustomerEmail" header="Customer Email"></th>
-                    <th field="Total" header="Total" ></th>
-                    <th field="PayStatus" header="Pay Status" ></th>
+                    <th  >Product</th>
+                    <th  >Customer Email</th>
+                    <th  >Total</th>
+                    <th   >Payment Status</th>
                 </tr>
                  </ng-template>
                  <ng-template pTemplate="body" let-item>
-                    <tr>
-                        <td field="Name" header="Name">
-                            <ng-template let-listItem="rowData" pTemplate="body">
-                                <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                                <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
-                            </ng-template>
+                    <tr  (click)="onRowSelect(item)">
+                        <td  >
+                            
+                                <img *ngIf="item.Image !== ''" src="{{item.Image}}" style="height:32px;" (click)="onRowSelect(item)" />
+                                <label (click)="onRowSelect(item)">{{item.Name}}</label>
+                            
                         </td>
-                        <td field="CustomerEmail" header="Customer Email" ></td>
-                        <td field="Total" header="Total"  ></td>
-                        <td field="PayStatus" header="Pay Status" ></td>
+                        <td   >{{item.CustomerEmail}}</td>
+                        <td   >{{item.Total}}</td>
+                        <td  >{{item.PayStatus}}</td>
                     </tr>
                 </ng-template>
 

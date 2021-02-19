@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CheckboxModule, FileUploadModule } from 'primeng/primeng';
 
@@ -17,7 +17,6 @@ import {Api} from '../services/api';
 
 @Component({
     templateUrl: './orders.component.html',
-    providers: [SessionService, AppService, OrdersService]
 
 })
 export class OrdersComponent implements OnInit {
@@ -40,7 +39,8 @@ export class OrdersComponent implements OnInit {
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _sessionService: SessionService,
-        private _orderService: OrdersService) {
+        private _orderService: OrdersService,
+        private _cdr: ChangeDetectorRef) {
     }
 
     ngOnInit() {
@@ -155,7 +155,7 @@ export class OrdersComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1);
                 this.msgBox.ShowMessage('info', 'Order deleted.');
-                this.loadOrders(1, 25);  // not updating the list so reload for now.
+                    this._cdr.detectChanges();  
             }, err => {
                 this.processingRequest = false;
                 this.msgBox.ShowResponseMessage(err.status);
@@ -202,7 +202,7 @@ export class OrdersComponent implements OnInit {
             }
             this.selectedItem = null;
             this.newItem = false;
-            this.loadOrders(1, 25);  // not updating the list so reload for now.
+              this._cdr.detectChanges();
         }, err => {
             this.selectedItem = null;
             this.displayDialog = false;

@@ -39,7 +39,6 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             <p-table [value]="products"
                          selectionMode="single"
                          [(selection)]="product"
-                         (onRowSelect)="onRowSelect($event)" 
                          [paginator]="true"
                          [loading]="loadingData"
                           rows="25"
@@ -54,7 +53,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             </tr>
                          </ng-template>
                          <ng-template pTemplate="body" let-product>
-                            <tr>
+                            <tr  (click)="onRowSelect($event, product)" >
                                 <td>{{product.Name}}</td>
                             </tr>
                         </ng-template>
@@ -76,23 +75,25 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         <input pInputText id="Name" [(ngModel)]="product.Name" class="input-sm form-control" />
                     </div>
                     <div class="form-group">
-                        <img src="{{product.Image}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
-
-                        <p-fileUpload *ngIf="!newProduct" name="uploadedFiles[]" url="{{fileUploadUrl}}/{{product.UUID}}/{{product.UUIDType}}"
-                                      id="{{product.UUID}}"
-                                      (onBeforeSend)="onBeforeSendFile($event)"
-                                      (onUpload)="onImageUpload($event )" accept="image/*" maxFileSize="1000000"                                      ></p-fileUpload>
+                            <img *ngIf="product.Image" src="{{product?.Image|getImageThumbPipe}}" style="width:64px;height:64px;" />
+                            <br/>
+                            <label type="button" id="lblImg{{product.UUID}}"   for="img{{product.UUID}}" 
+                                style="cursor: pointer;" >change image</label>
+                            <input type="file" style="display:none;" id="img{{product.UUID}}" name="img{{product.UUID}}" 
+                            (change)="onImageUpload($event.target.files, product)"
+                            accept="image/png, image/jpeg, image/jpg" />
                     </div>
                     <p-accordion (onOpen)="onTabShow($event)">
                         <p-accordionTab header="Details">
                                     <div class="form-group" style="z-index:9050!important;">
+                                        <!--todo hide strains for bongs etc-->
                                         <label for="cboStrains">Strain:{{selectedStrainName}}</label>
                                             <p-dropdown [options]="strainOptions"  appendTo="body"
                                             (onSelect)="onSelectStrain($event)"
                                                 [style]="{'width':'100%'}">
                                             </p-dropdown>
                                                 <!--
-                                                    
+                                                
                                             (onChange)="onSelectStrain($event )"
                                             (onBlur)="onCboLeaveAssetClass($event )"
                                             [options]="assetClassOptions"
@@ -103,7 +104,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                                 -->
 
 
-                                          <!--        todo re-implement
+                                          <!--        todo re-implement this is working in strains dialog
                                         <p-autoComplete   [suggestions]="strains" field="Name"
                                                         (completeMethod)="onSearchStrains($event)" [size]="30"
                                                         [minLength]="1" placeholder="Hint: type 'v' or 'f'" [dropdown]="true"
@@ -176,13 +177,24 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 <input pInputText id="Weight" [(ngModel)]="product.Weight" class="input-sm form-control" />
                             </div>
                             <div class="form-group">
+  <!--
                                 <p-dropdown 
                                             (onChange)="onCboChangeUOM($event )"
-                                            [options]="unitsOfMeasureOptions"
-                                            [(ngModel)]="selectedUOMUUID"
+                                            [options]="unitsOfMeasure"
+                                            [(ngModel)]="product.UOMUUID"
                                             [style]="{'width':'100%' }"
                                             placeholder="Select UOM">
                                 </p-dropdown>
+                               -->
+                                     <label for="cboUnitsOfMeasure">Unit Of Measure</label>
+                                    <select class="form-control input-sm" id="cboUnitsOfMeasure" name="cboUnitsOfMeasure"
+                                            [(ngModel)]="product.UOMUUID"
+                                            (ngModelChange)="onCboChangeUOM($event)">
+                                        <option *ngFor="let uom of unitsOfMeasure;" value="{{uom.UUID}}">
+                                            {{uom.Name}}
+                                        </option>
+                                    </select>
+                               
                             </div> 
                         </p-accordionTab>
                     </p-accordion>

@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { AccountService } from '../services/user/account.service';
@@ -47,6 +47,7 @@ export class LocationsComponent implements OnInit {
         private _route: ActivatedRoute,
         private _accountService: AccountService,
         private _geoService: GeoService,
+        private _cdr: ChangeDetectorRef,
         private _sessionService: SessionService
         ,private msgBox : MessageBoxesComponent) {
     
@@ -56,7 +57,6 @@ export class LocationsComponent implements OnInit {
 
     ngOnInit() {
         this.loadLocationTypes();
-        this.loadMemberAccounts();
     }
 
     cboLocationTypeChange(newType) {
@@ -78,9 +78,10 @@ export class LocationsComponent implements OnInit {
         this.location.LocationType = newType;
     }
 
-    toggleViewAllAcocunts(event){
-        console.log('locations.component.ts  toggleViewAllAcocunts allowAllAcocunts:', this.allowAllAcocunts);
+    toggleViewAllAccounts(event){
+        console.log('locations.component.ts  toggleViewAllAccounts allowAllAcocunts:', this.allowAllAcocunts);
         if(this.allowAllAcocunts && this._accountService.Accounts.length > 0 ){
+            console.log('filteredAccounts LOADED ********************************************************************************************');
             this.filteredAccounts = this._accountService.Accounts;
         }else{
             const filter = new Filter();
@@ -92,6 +93,7 @@ export class LocationsComponent implements OnInit {
                     return false;
                 }
                 this._accountService.Accounts  = response.Result;
+                console.log('filteredAccounts LOADED ********************************************************************************************');
                 this.filteredAccounts = response.Result;
                 console.log('locations.component.ts  loadMemberAccounts filteredAccounts:', this.filteredAccounts);
             }, err => {
@@ -125,6 +127,7 @@ export class LocationsComponent implements OnInit {
                 this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
+            console.log('filteredAccounts LOADED ********************************************************************************************');
             this.filteredAccounts = response.Result;
             console.log('locations.component.ts  loadMemberAccounts filteredAccounts:', this.filteredAccounts);
         }, err => {
@@ -145,6 +148,7 @@ export class LocationsComponent implements OnInit {
         this.processingRequest = true;
         const res = this._geoService.getLocationTypes();
         res.subscribe(response => {
+            console.log('locations.component.ts loadLocationTypes response');
             this.displayDialog = false;
             this.processingRequest = false;
             if (response.Code !== 200) {
@@ -235,6 +239,7 @@ export class LocationsComponent implements OnInit {
                 this.locations.splice(index, 1);
                 this.msgBox.ShowMessage('info', 'Location deleted.');
                 this.loadLocations(this.selectedLocationType, 1, 25);   // not updating the list so reload for now.
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
             }, err => {
                 this.processingRequest = false;
                 this.msgBox.ShowResponseMessage(err.status);
@@ -258,6 +263,14 @@ export class LocationsComponent implements OnInit {
     }
 
     save() {
+        for (let i = 0; i < this.countries.length; i++) {
+
+            if (this.countries[i].Name === this.location.Country) {
+                console.log('this.location found country:', this.location.Country);
+                console.log('this.countries found country:', this.countries[i].Name);
+            }
+        }
+
         console.log('locations.component.ts save');
         this.msgBox.closeMessageBox();
 
@@ -268,11 +281,11 @@ export class LocationsComponent implements OnInit {
             this.location.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
 
             if (this.location.City !== '') {
-                this.location.UUParentID = this.location.City;
+                this.location.UUParentID =  this.cities.find( x => x.Name ===  this.location.City ).UUID;
             } else if (this.location.State !== '') {
-                this.location.UUParentID = this.location.State;
+                this.location.UUParentID = this.states.find(x => x.Name ===  this.location.State).UUID;
             } else if (this.location.Country !== '') {
-                this.location.UUParentID = this.location.Country;
+                this.location.UUParentID = this.countries.find(x =>  x.Name === this.location.Country).UUID;
             }
         }
 
@@ -313,6 +326,7 @@ export class LocationsComponent implements OnInit {
                 this.locations[this.findSelectedLocationIndex()] = this.location;
             }
             this.loadLocations(this.selectedLocationType, 1, 25);   // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.location = null;
             this.displayDialog = false;
@@ -333,18 +347,23 @@ export class LocationsComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, data) {
         console.log('locations.component.ts onRowSelect');
-        this.loadCountries();
+       
         this.newLocation = false;
-        this.location = this.cloneLocation(event.data);
-        this._accountService.getAccount(this.location.AccountReference).subscribe(response => {
+        this.location = this.cloneLocation(data);
+        this._accountService.getAccount(this.location.AccountUUID).subscribe(response => {
           //  if (response.Code !== 200) {
           //      this.msgBox.ShowMessage(response.Status, response.Message);
           //      return false;
           //  }
           if(response.Code === 200){
+          
             this.selectedAccount = response.Result;
+            console.log('onRowSelect countries:', this.countries);
+            this.loadMemberAccounts();
+            this.loadCountries();
+            this._cdr.detectChanges();
           }
             this.displayDialog = true;
         });
@@ -373,7 +392,6 @@ export class LocationsComponent implements OnInit {
         const filter = new Filter();
         filter.PageResults = false;
 
-
         const res = this._geoService.getLocations('country', filter);
         res.subscribe(response => {
             this.processingRequest = false;
@@ -382,6 +400,14 @@ export class LocationsComponent implements OnInit {
                 return false;
             }
             this.countries = response.Result;
+           
+            for(var i = 0; i < this.countries.length; i++){
+                if(this.countries[i].Name.trim() === this.location.Country.trim()) {
+                    this.countries[i].Selected = true;//only way I could get the stupid option selected.
+                    this.loadStates(this.countries[i].Name);
+                    break;
+                }
+            }
         }, err => {
             this.processingRequest = false;
             this.msgBox.ShowResponseMessage(err.status);
@@ -407,10 +433,10 @@ export class LocationsComponent implements OnInit {
         return -1;
     }
 
-
-    loadStates(countryUUID) {
+    loadStates(countryName) {
         console.log('locations.component.ts loadStates');
-
+        // _.find(this.Countries.value, (x: Country) => (x && x.CountryCode) === this.model.Country) : null;
+        var countryUUID = this.countries.find(x => x.Name === countryName).UUID;
         const filter = new Filter();
         filter.PageResults = false;
         this.processingRequest = true;
@@ -422,6 +448,14 @@ export class LocationsComponent implements OnInit {
                 return false;
             }
             this.states = response.Result;
+            for(var i = 0; i < this.states.length; i++){
+                if(this.states[i].Name.trim() === this.location.State.trim()) {
+                    this.states[i].Selected = true;//only way I could get the stupid option selected.
+                    this.loadCities(this.states[i].Name);
+                    break;
+                }
+            }
+
         }, err => {
             this.processingRequest = false;
             this.msgBox.ShowResponseMessage(err.status);
@@ -436,8 +470,9 @@ export class LocationsComponent implements OnInit {
         });
     }
 
-    loadCities(stateUUID) {
+    loadCities(stateName) {
         console.log('locations.component.ts loadCities');
+        var stateUUID = this.states.find(x => x.Name === stateName).UUID;
         this.processingRequest = true;
         const filter = new Filter();
         filter.PageResults = false;
@@ -449,6 +484,12 @@ export class LocationsComponent implements OnInit {
                 return false;
             }
             this.cities = response.Result;
+            for(var i = 0; i < this.cities.length; i++){
+                if(this.cities[i].Name.trim() === this.location.City.trim()) {
+                    this.cities[i].Selected = true;//only way I could get the stupid option selected.
+                    break;
+                }
+            }
         }, err => {
             this.processingRequest = false;
             this.msgBox.ShowResponseMessage(err.status);
@@ -462,7 +503,6 @@ export class LocationsComponent implements OnInit {
 
         });
     }
-
 
     filterAccounts(event) {
         console.log('locations.compoentent.ts filterAccounts');
@@ -504,9 +544,10 @@ export class LocationsComponent implements OnInit {
                 this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            this.location.AccountReference = value.UUID;
+            console.log('selectedAccount LOADED b------------------------------------------------------------------------------------------------');
             this.selectedAccount.Name = value.Name;
             this.selectedAccount.UUID = value.UUID;
+            
             if ( BasicValidators.isNullOrEmpty(this.location.Name) === true) {
                 this.location.Name = value.Name;
             }
@@ -536,6 +577,4 @@ export class LocationsComponent implements OnInit {
         });
         */
     }
-
-
 }

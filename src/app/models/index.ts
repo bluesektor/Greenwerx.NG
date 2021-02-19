@@ -14,8 +14,9 @@ export { ServiceResult } from './serviceresult';
 export {Profile}from './profile';
 export {Favorite} from './favorite';
 export {EventLocation} from './event.location';
-/*
 export {FileEx} from './fileex';
+/*
+
 export {ImageRef}from './image';
 
 export {Event} from './event';

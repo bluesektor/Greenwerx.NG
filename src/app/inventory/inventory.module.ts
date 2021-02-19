@@ -14,7 +14,7 @@ import { PreventUnsavedChangesGuard } from '../prevent-unsaved-changes-guard.ser
 
 import { CommonModuleEx } from '../common/common.moduleex';
 import { InventoryComponent } from './inventory.component';
-
+ 
 import { SessionService } from '../services/user/session.service';
 
 import { InventoryService } from '../services/inventory.service';

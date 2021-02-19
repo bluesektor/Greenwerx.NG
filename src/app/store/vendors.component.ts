@@ -20,7 +20,6 @@ import { Vendor } from '../models/vendor';
 @Component({
     templateUrl: './vendors.component.html',
 
-    providers: [ProductService, ConfirmationService, SessionService]
 })
 export class VendorsExComponent implements OnInit {
 

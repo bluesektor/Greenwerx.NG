@@ -65,7 +65,7 @@ export class RoleService  {
 
     getSelectedPermisssions(roleUUID, searchFilter: Filter) {
 
-        return this.api.invokeRequest('GET', 'api/Roles/' + roleUUID + '/Permission' ,searchFilter);
+        return this.api.invokeRequest('GET', 'api/Roles/' + roleUUID + '/Permissions' ,searchFilter);
     }
 
     addPermissionsToRole(roleUUID: string, permissions: Node[]) {

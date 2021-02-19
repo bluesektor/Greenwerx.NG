@@ -29,7 +29,6 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         dataKey="UUID" editMode="row"
                          (onEdit)="onEditValue($event)" 
                          [paginator]="true" [rows]="rows" 
-                       
                          [(first)]="first"
                           >
                          
@@ -49,12 +48,13 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 <ng-template pTemplate="body"  let-data  let-editing="editing" let-ri="rowIndex" >
                     <tr  [pEditableRow]="data" >
                         <td>
-                            <img *ngIf="data.Image" src="{{data?.Image}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
-
-                            <p-fileUpload *ngIf="editImage" name="uploadedFiles[]" url="{{fileUploadUrl}}{{data.UUID}}/{{data.UUIDType}}"
-                                      id="{{data.UUID}}"
-                                      (onBeforeSend)="onBeforeSendFile($event)"
-                                      (onUpload)="onImageUpload($event,data.UUID)" accept="image/*" maxFileSize="1000000"></p-fileUpload>
+                            <img *ngIf="data.Image" src="{{data?.Image|getImageThumbPipe}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
+                            <br/>
+                            <label type="button" id="lblImg{{data.UUID}}"   for="img{{data.UUID}}" 
+                                style="cursor: pointer;" >change</label>
+                            <input type="file" style="display:none;" id="img{{data.UUID}}" name="img{{data.UUID}}" 
+                            (change)="onImageUpload($event.target.files, data)"
+                            accept="image/png, image/jpeg, image/jpg" />
                         </td>
                         <td pEditableColumn>
                             <p-cellEditor>
@@ -152,13 +152,10 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                 </ng-template>
                
                 <ng-template pTemplate="footer">
-                  
                     <tr>
                         <td colspan="9" >
                             <div class="cell-block" style="width:25%">
-                                
                                 <button type="button" class="form-control input-sm" value="Products"
-                                      
                                         (click)="showDialogToAdd('Product')" label="Products">
                                     <i class="fa fa-plus" style="color:blue;"></i> Products
                                 </button>

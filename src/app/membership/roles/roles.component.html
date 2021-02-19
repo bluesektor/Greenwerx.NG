@@ -94,9 +94,11 @@
                                                                              /> </div>
 
                            <div *ngIf="loadingData" style="width:100%; text-align: center;"> <i class="fa fa-spinner fa-spin fa-2x"></i> </div>
+                         <!-- https://primefaces.org/primeng/showcase/#/picklist  -->
                            <p-pickList [source]="availablePermissions" [target]="selectedPermissions" sourceHeader="Available"
                                        (onMoveToTarget)="addPermissions($event)" (onMoveToSource)="removePermissions($event)"
-                                       targetHeader="Selected" [responsive]="true" [sourceStyle]="{'height':'500px'}" [targetStyle]="{'height':'500px'}">
+                                       targetHeader="Selected" [responsive]="true" [sourceStyle]="{'height':'500px'}" 
+                                       [targetStyle]="{'height':'500px'}">
 
                                <ng-template let-node pTemplate="user">
                                    <div class="ui-helper-clearfix">
@@ -104,6 +106,9 @@
                                    </div>
                                </ng-template>
                            </p-pickList>
+                          
+                          
+
                     </p-accordionTab>
             </p-accordion>
         </div>

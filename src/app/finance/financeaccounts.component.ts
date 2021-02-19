@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild,ChangeDetectorRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CheckboxModule, FileUploadModule, InputTextModule } from 'primeng';
 
@@ -38,10 +38,8 @@ export class FinanceAccountsComponent implements OnInit {
     currency = new Currency();
     selectedLocationType = '';
     locationTypes: string[];
-    filteredCurrencies: string[];
-    selCurrency = '';
-
-
+    filteredCurrencies: Currency[];
+    selCurrency = new Currency();
   
     constructor(
         private _router: Router,
@@ -50,11 +48,14 @@ export class FinanceAccountsComponent implements OnInit {
         private _geoService: GeoService,
         private _sessionService: SessionService,
         private _financeService: FinanceService
-        ,private msgBox : MessageBoxesComponent) {
+        ,private msgBox : MessageBoxesComponent,
+        private _cdr: ChangeDetectorRef,) {
       
     }
 
     ngOnInit() {
+      
+        this.selectedLocationType = '';
         this.baseUrl = Api.url;
         this.fileUploadUrl = Api.url + 'api/File/Upload/';
         this.selectedItem.Image = '/Content/Default/Images/bank.png';
@@ -63,6 +64,11 @@ export class FinanceAccountsComponent implements OnInit {
     }
 
     initializeUI(page?: number, pageSize?: number) {
+
+        console.log('financeaccounts.component.ts initializeUI');
+        this.filter = new Filter();
+        this.filter.PageResults = false;
+
         const res = this._financeService.getCurrencies(this.filter);
         res.subscribe(response => {
             this.displayDialog = false;
@@ -72,6 +78,8 @@ export class FinanceAccountsComponent implements OnInit {
                 return false;
             }
             this.currencies = response.Result;
+            console.log('financeaccounts.component.ts initializeUI this.currencies:', this.currencies);
+            this.filteredCurrencies = this.currencies;
             this.loadFinanceAccounts(page, pageSize);
 
         }, err => {
@@ -122,7 +130,6 @@ export class FinanceAccountsComponent implements OnInit {
         this.initializeUI(event.first, event.rows);
     }
 
-
     showDialogToAdd() {
         this.newFinanceAccount = true;
         this.selectedItem = null;
@@ -131,10 +138,12 @@ export class FinanceAccountsComponent implements OnInit {
         this.selectedItem.Image = '/Content/Default/Images/bank.png';
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, item) {
         this.newFinanceAccount = false;
-        this.selectedItem = this.cloneItem(event);
+        this.selectedItem = null;
+        this.selectedItem = this.cloneItem(item);
         this.displayDialog = true;
+        this._cdr.detectChanges();
     }
 
     cloneItem(c: FinanceAccount): FinanceAccount {
@@ -166,6 +175,7 @@ export class FinanceAccountsComponent implements OnInit {
                 // at the given index.
                 this.listData.splice(index, 1); // not updating the list so reload
                 this.loadFinanceAccounts(1, 25);
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
                 this.msgBox.ShowMessage('info', 'FinanceAccount deleted.');
             }, err => {
                 this.processingRequest = false;
@@ -185,7 +195,7 @@ export class FinanceAccountsComponent implements OnInit {
         this.msgBox.closeMessageBox();
         this.processingRequest = true;
         let res = null;
-
+       
         if (this.newFinanceAccount) {// add
             res = this._financeService.addFinanceAccount(this.selectedItem);
         } else { // update
@@ -210,9 +220,10 @@ export class FinanceAccountsComponent implements OnInit {
                 this.msgBox.ShowMessage('info', 'FinanceAccount updated.');
                 this.listData[this.findSelectedItemIndex(this.selectedItem.UUID)] = this.selectedItem;
             }
-            this.selectedItem = null;
+         
             this.newFinanceAccount = false;
             this.loadFinanceAccounts(1, 25); // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.selectedItem = null;
             this.displayDialog = false;
@@ -347,28 +358,29 @@ export class FinanceAccountsComponent implements OnInit {
         });
     }
 
-    handleDropdownClick() {
+    handleDropdownClick(event) {
         this.filteredCurrencies = [];
         const filter = new Filter();
         filter.PageResults = true;
         filter.StartIndex = 1;
         filter.PageSize = 25;
-
+ 
         this._financeService.getCurrencies(filter).subscribe(response => {
             if (response.Code !== 200) {
                 this.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
 
-            for (let i = 0; i < response.Result.length; i++) {
-                this.filteredCurrencies.push(response.Result[i].Name);
-            }
-            console.log('handleDropdownClick.getCurrencies',  this.filteredCurrencies.length );
+            this.filteredCurrencies = response.Result;
+       
+            console.log('handleDropdownClick.getCurrencies',  this.filteredCurrencies  );
         });
     }
 
     onSelectCurrency(value) {
 
+        this.selectedItem.CurrencyUUID = value;
+        /*
         this._financeService.getCurrency(value).subscribe(response => {
             if (response.Code !== 200) {
                 this.msgBox.ShowMessage(response.Status, response.Message);
@@ -376,6 +388,7 @@ export class FinanceAccountsComponent implements OnInit {
             }
             this.selectedItem.CurrencyUUID = response.Result.UUID;
         });
+        */
     }
 
     cboLocationTypeChange(newType) {

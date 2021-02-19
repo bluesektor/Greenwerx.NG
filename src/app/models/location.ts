@@ -5,7 +5,7 @@ import { Node } from './node';
 
 export class Location extends Node {
 
-
+    Selected: boolean;
     // dlg has been added to to the client ui.
     // make sure when adding to ui the api/update
     // function updates the added properites.
@@ -40,10 +40,6 @@ export class Location extends Node {
     isDefault: boolean;
 
     IsBillingAddress: boolean;  // dlg
-
-    // This is to link an account to a location.
-    // Set this to the account.UUID
-    AccountReference: string;
 
     // This is the linked account name
     AccountName: string;        // dlg

@@ -48,7 +48,7 @@ export class PlantsService  {
     }
 
     getStrains(filter: Filter) {
-        return this.api.invokeRequest('GET', 'api/Strains' ,filter );
+        return this.api.invokeRequest('POST', 'api/Strains' ,filter );
     }
 
     getStrain(strainUUID) {

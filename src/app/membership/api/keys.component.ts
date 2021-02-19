@@ -263,6 +263,7 @@ let data = response as ServiceResult;
                 this.apiKeys[this.findSelectedIndex(this.selectedApiKey)] = this.selectedApiKey;
             }
             this.loadApiKeys(  1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.loadingData = false;
             this.msgBox.ShowResponseMessage(err.status);

@@ -5,7 +5,8 @@ import {   OnInit  } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ObjectFunctions } from './common/object.functions';
 import {Parser} from './common/parser.functions';
-
+import {MessagePump}  from './common/message.pump';
+import { Observable } from 'rxjs';
 declare var DeviceUUID: any;
 
 @Injectable({
@@ -14,14 +15,110 @@ declare var DeviceUUID: any;
 export class AppSetting implements  OnInit {
     manifest: any;
     settings: any;
-    private renderer: Renderer2;
+   // private renderer: Renderer2;
 
     constructor(private http: HttpClient,
       private route: ActivatedRoute,
+      private _messagePump:MessagePump,
       private router: Router,
       private rendererFactory: RendererFactory2
       ) {
         console.log('app.settings.ts  constructor');
+       
+        if (ObjectFunctions.isValid(this.manifest) === false) {
+          this.loadSettings();
+        }
+
+        this.getDeviceSettings();
+       
+        console.log('app.settings.ts getURLParameter...');
+        const type =  Parser.getURLParameter('type', location.search);
+        const op = Parser.getURLParameter('operation', location.search);
+        const code =  Parser.getURLParameter('code', location.search);
+
+        if (Parser.getURLParameter('validate', location.search) === 'membership' ) {
+          this.router.navigateByUrl('/membership/validate/type/' + type +
+          '/operation/' + op + '/code/' + code);
+        } 
+     
+      //  this.renderer = rendererFactory.createRenderer(null, null);
+      
+    }
+    public loadSettings$( ) : Observable<Object>{
+          return this.http.get('assets/data/environment.' + this.manifest.environment +  '.json');
+           /* .subscribe(res => {
+              if ( ObjectFunctions.isValid( res ) === false) {
+                return;
+              }
+                this.settings = res;
+                console.log('APP.SETTINGS.TS manifest.initialize this.settings:', this.settings);
+                if (  ObjectFunctions.isValid( this.settings) === false) {
+                  return;
+                }
+
+                this._messagePump.publish('settings:loaded', {
+                  msg: 'message',
+                   time: new Date()
+                });
+            this.renderer.addClass(document.body, this.settings.theme);
+          });*/
+     // });
+     
+    }
+
+    public loadSettings( ) {
+     
+      const self = this;
+      this.http //Must load the manifest before settings
+        .get('assets/manifest.json') .subscribe(res => {
+          console.log('APP.SETTINGS.TS res:', res);
+          self.manifest = res;
+          console.log('APP.SETTINGS.TS manifest:', self.manifest);
+          console.log('app.settings.ts  loadSettings');
+          if ( ObjectFunctions.isValid(this.settings)) {
+         //   this.renderer.addClass(document.body, this.settings.theme);
+            return;
+          }
+          this.http
+            .get('assets/data/environment.' + this.manifest.environment +  '.json').subscribe(res => {
+              if ( ObjectFunctions.isValid( res ) === false) {
+                return;
+              }
+                this.settings = res;
+                console.log('APP.SETTINGS.TS manifest.initialize this.settings:', this.settings);
+                if (  ObjectFunctions.isValid( this.settings) === false) {
+                  return;
+                }
+
+                this._messagePump.publish('settings:loaded', {
+                  msg: 'message',
+                   time: new Date()
+                });
+           // this.renderer.addClass(document.body, this.settings.theme);
+          });
+      });
+    }
+
+    ngOnInit() { 
+      
+      console.log('APP.settings.TS ngOnInit');
+ 
+      /* moved to constructor, can't recall which worked better.
+      console.log('app.settings.ts getURLParameter...');
+      const type =  Parser.getURLParameter('type', location.search);
+      const op = Parser.getURLParameter('operation', location.search);
+      const code =  Parser.getURLParameter('code', location.search);
+
+      if (Parser.getURLParameter('validate', location.search) === 'membership' ) {
+        this.router.navigateByUrl('/membership/validate/type/' + type +
+        '/operation/' + op + '/code/' + code);
+      }
+      */
+    
+    }
+
+    getDeviceSettings(){
+
 /*
         const du = new DeviceUUID().parse();
         const dua = [
@@ -75,82 +172,5 @@ export class AppSetting implements  OnInit {
      // for (const [key, value] of Object.entries(du)) {
      //   console.log(key + ':' + value);
     //  }
-
-
-        this.renderer = rendererFactory.createRenderer(null, null);
-
-        const self = this;
-        if (!this.manifest) {
-          this.http
-            .get('assets/manifest.json') .subscribe(res => {
-              console.log('APP.SETTINGS.TS res:', res);
-                self.manifest = res;
-                console.log('APP.SETTINGS.TS manifest:', self.manifest);
-                self.loadSettings();
-               return;
-            });
-        }
-        console.log('app.settings.ts getURLParameter...');
-        const type =  Parser.getURLParameter('type', location.search);
-        const op = Parser.getURLParameter('operation', location.search);
-        const code =  Parser.getURLParameter('code', location.search);
-
-        if (Parser.getURLParameter('validate', location.search) === 'membership' ) {
-          this.router.navigateByUrl('/membership/validate/type/' + type +
-          '/operation/' + op + '/code/' + code);
-        }
-     
-
-    }
-
-
-    protected loadSettings( ) {
-        
-      console.log('app.settings.ts  loadSettings');
-      if ( ObjectFunctions.isValid(this.settings)) {
-        this.renderer.addClass(document.body, this.settings.theme);
-        return;
-      }
-      this.http
-        .get('assets/data/environment.' + this.manifest.environment +  '.json').subscribe(res => {
-          if ( ObjectFunctions.isValid( res ) === false) {
-            return;
-          }
-            this.settings = res;
-            console.log('APP.SETTINGS.TS manifest.initialize this.settings:', this.settings);
-            if (  ObjectFunctions.isValid( this.settings) === false) {
-              return;
-            }
-        this.renderer.addClass(document.body, this.settings.theme);
-
-
-      });
-    }
-
-
-    ngOnInit() { 
-      
-      console.log('APP.settings.TS ngOnInit');
-      const self = this;
-      if (!this.manifest) {
-        this.http
-          .get('assets/manifest.json') .subscribe(res => {
-            console.log('APP.SETTINGS.TS res:', res);
-              self.manifest = res;
-              console.log('APP.SETTINGS.TS manifest:', self.manifest);
-              self.loadSettings();
-             return;
-          });
-      }
-      console.log('app.settings.ts getURLParameter...');
-      const type =  Parser.getURLParameter('type', location.search);
-      const op = Parser.getURLParameter('operation', location.search);
-      const code =  Parser.getURLParameter('code', location.search);
-
-      if (Parser.getURLParameter('validate', location.search) === 'membership' ) {
-        this.router.navigateByUrl('/membership/validate/type/' + type +
-        '/operation/' + op + '/code/' + code);
-      }
-    
     }
 }

@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { SessionService } from '../services/user/session.service';
@@ -45,7 +45,8 @@ export class SettingsComponent implements OnInit {
         private _route: ActivatedRoute,
         private _settingService: SettingsService,
         private _sessionService: SessionService
-        ,private msgBox : MessageBoxesComponent) {
+        ,private msgBox : MessageBoxesComponent,
+        private _cdr:ChangeDetectorRef) {
 
       
 
@@ -65,6 +66,7 @@ export class SettingsComponent implements OnInit {
         filter.PageResults = true;
         filter.StartIndex = page;
         filter.PageSize = pageSize;
+/*
         if (this.settingType !== '') {
             const screen = new Screen();
             screen.Command = 'SEARCHBY';
@@ -80,6 +82,7 @@ export class SettingsComponent implements OnInit {
             classScreen.Value = this.settingClass;
             filter.Screens.push(classScreen);
         }
+        */
 
         const res = this._settingService.getSettings(filter);
 
@@ -91,6 +94,9 @@ export class SettingsComponent implements OnInit {
                 return false;
             }
             this.settings = response.Result;
+            for(var i = 0; i < this.settings.length; i++){
+                this.settings[i].Type = this.settings[i].Type.toUpperCase();
+            }
             this.totalSettings = response.TotalRecordCount;
         }, err => {
             this.processingRequest = false;
@@ -139,12 +145,12 @@ export class SettingsComponent implements OnInit {
                     return false;
                 }
 
-                const index = this.findSelectedSettingIndex(); //  this.settings.indexOf(this.setting)
+                const index = this.findSelectedSettingIndex(this.setting); //  this.settings.indexOf(this.setting)
                 // Here, with the splice method, we remove 1 object
                 // at the given index.
                 this.settings.splice(index, 1);
                 this.msgBox.ShowMessage('info', 'Setting deleted.');
-                this.loadSettings(1, 25);
+               this._cdr.detectChanges();
             }, err => {
                 this.processingRequest = false;
                 this.msgBox.ShowResponseMessage(err.status);
@@ -176,7 +182,7 @@ export class SettingsComponent implements OnInit {
             this.setting.AccountUUID = this._sessionService.CurrentSession.AccountUUID;
         }
 
-        this.settings.push(this.setting);
+      //  this.settings.push(this.setting);
         this.processingRequest = true;
 
         let res = null;
@@ -190,7 +196,6 @@ export class SettingsComponent implements OnInit {
         res.subscribe(response => {
 
             this.processingRequest = false;
-            this.setting = null;
             this.displayDialog = false;
 
             if (response.Code !== 200) {
@@ -200,12 +205,13 @@ export class SettingsComponent implements OnInit {
 
             if (this.newSetting) {// add
                 this.msgBox.ShowMessage('info', 'Setting added.');
+                this.setting = response.Result;
                 this.settings.push(this.setting);
             } else { // update
                 this.msgBox.ShowMessage('info', 'Setting updated.');
-                this.settings[this.findSelectedSettingIndex()] = this.setting;
+                this.settings[this.findSelectedSettingIndex(this.setting)] = this.setting;
             }
-            this.loadSettings(1, 25);
+            this._cdr.detectChanges();
         }, err => {
             this.setting = null;
             this.displayDialog = false;
@@ -225,9 +231,10 @@ export class SettingsComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, setting) {
         this.newSetting = false;
-        this.setting = this.cloneSetting(event.data);
+        this.setting = this.cloneSetting(setting);
+        this.setting.Type = this.setting.Type.toUpperCase();
         this.displayDialog = true;
     }
 
@@ -239,7 +246,13 @@ export class SettingsComponent implements OnInit {
         return setting;
     }
 
-    findSelectedSettingIndex(): number {
-        return this.settings.indexOf(this.setting);
+    findSelectedSettingIndex(setting): number {
+      //  return this.settings.indexOf(this.setting);
+      for (let i = 0; i < this.settings.length; i++) {
+        if (this.settings[i].UUID === setting.UUID) {
+            return i;
+        }
+    }
+    return -1;
     }
 }

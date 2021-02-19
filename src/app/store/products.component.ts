@@ -8,6 +8,7 @@ import { MessageBoxesComponent } from '../common/messageboxes.component';
 import { BasicValidators } from '../common/basicValidators';
 import { SessionService } from '../services/user/session.service';
 import { PlantsService } from '../services/plants.service';
+import { ImageService } from '../services/image.service';
 import { AccountService } from '../services/user/account.service';
 import { CheckboxModule } from 'primeng/primeng';
 import { PickListModule } from 'primeng/primeng';
@@ -20,6 +21,7 @@ import { Screen } from '../models/screen';
 import { ProductService } from '../services/product.service';
 import { CategoriesService } from '../services/categories.service';
 import { UnitsOfMeasureService } from '../services/unitsofmeasure.service';
+import {GetImageThumbPipe } from '../common/pipes/image.pipe';
 import { Product } from '../models/product';
 import { Category } from '../models/category';
 import { Location } from '../models/location';
@@ -32,7 +34,6 @@ import { ServiceResult } from '../models';
 @Component({
     templateUrl: './products.component.html',
 
-  //  providers: [ProductService, ConfirmationService, SessionService, GeoService, CategoriesService, PlantsService, UnitsOfMeasureService]
 })
 export class ProductsComponent implements OnInit {
 
@@ -41,7 +42,6 @@ export class ProductsComponent implements OnInit {
     displayDialog = false;
     product: Product = new Product();
     selectedCategoryUUID: string;
-    selectedUOMUUID: string;
     newProduct = false;
     products: Product[];
     categories: Category[];
@@ -62,7 +62,6 @@ export class ProductsComponent implements OnInit {
 
     // ===--- Picture upload ---===
     editImage = false;
-    fileUploadUrl = '';
     uploadedFiles: any[] = [];
     imageUrl = '';
     imageUrlTmb = '';
@@ -72,7 +71,7 @@ export class ProductsComponent implements OnInit {
     msgs: any[] = [];
 
     // =======----- Units of Measure-----========
-    selectUOMName = '';
+   // = '';
     unitsOfMeasure: any[] = [];
     // had to create this for the cbo, and set the name and value to the name.
     // this was because the cbo keeps showing the value after selecting an option.
@@ -90,6 +89,7 @@ export class ProductsComponent implements OnInit {
         private _plantsService: PlantsService,
         private _unitsOfMeasureService: UnitsOfMeasureService,
         private _router: Router,
+        private _imageService:ImageService,
         private _route: ActivatedRoute) {
 
         this.formProductDetail = fb.group({
@@ -115,14 +115,13 @@ export class ProductsComponent implements OnInit {
         this.loadDepartments();
         this.loadLocations();
         this.loadStrains();
-        this.fileUploadUrl = Api.url   + 'api/File/Upload';
     }
 
     onTabShow(e) {
         switch (e.index) {
-            case 0:
+            case 1:
                 break;
-            case 1: // set the strain name and manufacturer name
+            case 2: // set the strain name and manufacturer name
 
                 if (this.product.StrainUUID) {
                     this._plantsService.getStrain(this.product.StrainUUID).subscribe(response => {
@@ -143,7 +142,7 @@ export class ProductsComponent implements OnInit {
                     });
                 }
                 break;
-            case 2: // Pricing
+            case 3: // Pricing
                 const filter = new Filter();
                 filter.PageResults = true;
                 filter.StartIndex = 1;
@@ -157,21 +156,38 @@ export class ProductsComponent implements OnInit {
                     this.unitsOfMeasure = response.Result;
                     for (let i = 0; i < this.unitsOfMeasure.length; i++) {
                         this.unitsOfMeasureOptions.push({ label: response.Result[i].Name, value: response.Result[i].UUID });
-                        if (this.product.UOMUUID === response.Result[i].UUID) {
-                            this.selectedUOMUUID = response.Result[i].UUID;
-                        }
+                
                     }
 
                 });
                 break;
         }
     }
+
     onBeforeSendFile(event) {
 
         event.xhr.setRequestHeader('Authorization', 'Bearer ' + Api.authToken  );
     }
 
-    onImageUpload(event) {
+    onImageUpload(files, product) {
+        const formData = new FormData();
+       
+        let currFile = files.item(0);
+        console.log(currFile);
+        this._imageService.uploadImage(currFile, product.UUID ,'Product')
+            .subscribe(data =>{
+                const response = data as ServiceResult;
+
+                if (response.Code !== 200) {
+                    this.msgBox.ShowMessage(response.Status, response.Message);
+                    return false;
+                }
+
+                console.log('image upload response:',  response.Result);
+               product.Image = response.Result.ImageThumb;
+
+        });
+        /*
         let currFile;
         for (const file of event.files) {
             this.uploadedFiles.push(file);
@@ -179,6 +195,7 @@ export class ProductsComponent implements OnInit {
         }
         this.product.Image = Api.url + 'Content/Uploads/' +
             this._sessionService.CurrentSession.AccountUUID + '/' + currFile.name;
+            */
     }
 
     // ===--- Top Menu Bar ---===
@@ -372,7 +389,7 @@ export class ProductsComponent implements OnInit {
             // at the given index.
             this.products.splice(index, 1);
             this.loadProducts(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
-
+       //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.deletingData = false;
             if (err.status === 401) {
@@ -407,7 +424,7 @@ export class ProductsComponent implements OnInit {
         filter.PageSize = pageSize;
         const screen = new Screen();
         screen.Command = 'SearchBy';
-        screen.Field = 'CATEGORY';
+        screen.Field = 'CATEGORYUUID';
         screen.Value = categoryUUID;
         filter.Screens.push(screen);
 
@@ -443,9 +460,9 @@ export class ProductsComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, data) {
         this.newProduct = false;
-        this.product = this.cloneProduct(event.data);
+        this.product = this.cloneProduct(data);
         this.displayDialog = true;
     }
 
@@ -499,6 +516,7 @@ export class ProductsComponent implements OnInit {
                 this.products[this.findSelectedIndex(this.product)] = this.product;
             }
             this.loadProducts(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
             this.loadingData = false;
             this.msgBox.ShowResponseMessage(err.status);
@@ -625,8 +643,7 @@ export class ProductsComponent implements OnInit {
     // =======----- Units of Measure-----========
 
     onCboChangeUOM(event) {
-        this.product.UOMUUID = event.value;
-        this.selectUOMName = this.getUOMName(event.value);
+        this.product.UOMUUID = event;
     }
 
     getUOMName(uomUUID: string): string {

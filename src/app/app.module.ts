@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
-
+import { MAT_DIALOG_DATA ,MatDialogRef  } from '@angular/material/dialog';
 import { AppRoutingModule } from './app-routing';
 import { AppComponent } from './app.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -35,8 +35,9 @@ import { PrivacyPolicyComponent } from './privacy-policy.component';
 
 // Services
 import { SessionService } from './services/user/session.service';
+import {AdminService} from './services/admin.service';
 import {AppService} from './services/app.service';
-
+import {OrdersService} from './services/orders.service';
 import {FinanceService} from './services/finance.service';
 import {GeoService}  from './services/geo.service';
 import { MessageBoxesModule } from './common/messageboxes.module';
@@ -45,6 +46,7 @@ import {PlantsService} from './services/plants.service';
 import {RoleService} from './services/roles.service';
 import { EquipmentService } from './services/equipment.service';
 import { InventoryService } from './services/inventory.service';
+import { ImageService } from './services/image.service';
 import { UnitsOfMeasureService } from './services/unitsofmeasure.service';
 import { ProductService } from './services/product.service';
 //Modules
@@ -62,7 +64,8 @@ import { RolesModule } from './membership/roles/roles.module';
 import { APIModule } from './membership/api/api.module';
 import { UsersModule } from './membership/users/users.module';
 import { GraphsModule } from './common/graphs.module';
-
+import { DialogsModule } from './common/dialogs/dialogs.module';
+import { DialogService } from './common/dialogs/dialog.service';
  
 @NgModule({
   declarations: [
@@ -72,6 +75,7 @@ import { GraphsModule } from './common/graphs.module';
     ContactFormComponent,
     HomeComponent,
     InstallComponent,
+   
     NavBarAdminComponent,
     NavBarDefaultComponent,
     NotFoundComponent,
@@ -85,6 +89,7 @@ import { GraphsModule } from './common/graphs.module';
     AppRoutingModule,
     MessageBoxesModule,
     BrowserAnimationsModule,
+    DialogsModule,
     CommonModuleEx,
     FormsModule,
     PanelMenuModule,
@@ -117,11 +122,21 @@ import { GraphsModule } from './common/graphs.module';
       }
   }),
   ],
-  providers: [AppService, FinanceService,GeoService, 
+  providers: [AdminService,AppService, FinanceService,GeoService, 
     EquipmentService, InventoryService, ProductService,
+    ImageService,
     StoreService,UnitsOfMeasureService,PreventUnsavedChangesGuard,
     ConfirmationService,
-    PlantsService, RoleService],
+    PlantsService, RoleService,
+    OrdersService,
+  
+      {
+        provide: MatDialogRef,
+        useValue: {}
+      },
+      DialogService,
+   
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

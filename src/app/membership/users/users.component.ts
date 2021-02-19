@@ -70,6 +70,7 @@ export class UsersComponent implements OnInit {
                 this.users.splice(index, 1);
                 this.msgBox.ShowMessage('info', 'User deleted.');
                 this.loadUsers(); // not updating the list so reload for now.
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
 
             }, err => {
                 this.processingRequest = false;
@@ -100,7 +101,6 @@ export class UsersComponent implements OnInit {
         }
 
         this.processingRequest = true;
-
         let res = null;
 
         if (this.newUser) { // add
@@ -128,6 +128,7 @@ export class UsersComponent implements OnInit {
                 this.users[this.findSelectedUserIndex()] = this.user;
             }
             this.loadUsers(); // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
         }, err => {
              this.user = null;
             this.displayDialog = false;
@@ -148,9 +149,9 @@ export class UsersComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event, user) {
         this.newUser = false;
-        this.user = this.cloneUser(event.data);
+        this.user = this.cloneUser(user);
         this.displayDialog = true;
     }
 

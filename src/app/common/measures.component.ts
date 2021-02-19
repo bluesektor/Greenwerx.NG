@@ -1,6 +1,6 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
-import { Component, ViewChild, OnInit, Output, EventEmitter, ElementRef } from '@angular/core';
+import { Component, ViewChild, OnInit, Output, EventEmitter, ElementRef,ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MessageBoxesComponent } from '../common/messageboxes.component';
@@ -52,7 +52,8 @@ export class MeasuresComponent implements OnInit {
         private _categoriesService: CategoriesService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private msgBox:MessageBoxesComponent
+        private msgBox:MessageBoxesComponent,
+        private _cdr: ChangeDetectorRef
 ) {
 
         this.formUnitOfMeasureDetail = fb.group({
@@ -99,6 +100,7 @@ export class MeasuresComponent implements OnInit {
             // at the given index.
             this.measures.splice(index, 1);
             this.loadUnitOfMeasures(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
 
         }, err => {
             this.deletingData = false;
@@ -159,20 +161,9 @@ export class MeasuresComponent implements OnInit {
         this.displayDialog = false;
     }
 
-    onRowSelect(event) {
+    onRowSelect(event,data) {
         this.newUnitOfMeasure = false;
-        this.selectedMeasure = this.cloneUnitOfMeasure(event.data);
-
-       /*
-            this._measuresService.getAccount(this.selectedMeasure.BreederUUID).subscribe(response => {
-
-                if (response.Code !== 200) {
-                    this.msgBox.ShowMessage(response.Status, response.Message);
-                    return false;
-                }
-                this.selectedMeasure = response.Result.Name;
-            });
-       */
+        this.selectedMeasure = this.cloneUnitOfMeasure(data);
         this.displayDialog = true;
     }
 
@@ -209,45 +200,51 @@ export class MeasuresComponent implements OnInit {
         } else {
             res = this._measuresService.update(this.selectedMeasure);
         }
-
+        var self = this;
         res.subscribe(response => {
 
-            this.loadingData = false;
-            this.displayDialog = false;
+            self.loadingData = false;
+            self.displayDialog = false;
 
             if (response.Code !== 200) {
-                this.msgBox.ShowMessage(response.Status, response.Message);
+                self.msgBox.ShowMessage(response.Status, response.Message);
                 return false;
             }
-            if (this.newUnitOfMeasure) {
-                this.msgBox.ShowMessage('info', 'UnitOfMeasure added.');
-                this.selectedMeasure.UUID = response.Result.UUID;
-                this.newUnitOfMeasure = false;
-                this.measures.push(this.selectedMeasure);
+            if (self.newUnitOfMeasure) {
+                self.msgBox.ShowMessage('info', 'UnitOfMeasure added.');
+                self.selectedMeasure.UUID = response.Result.UUID;
+                self.newUnitOfMeasure = false;
+                self.measures.push(self.selectedMeasure);
 
             } else {
-                this.msgBox.ShowMessage('info', 'UnitOfMeasure updated.');
-                this.measures[this.findSelectedIndex(this.selectedMeasure)] = this.selectedMeasure;
+                self.msgBox.ShowMessage('info', 'UnitOfMeasure updated.');
+                self.measures[this.findSelectedIndex(this.selectedMeasure)] = this.selectedMeasure;
             }
-            this.loadUnitOfMeasures(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+            self.loadUnitOfMeasures(this.selectedCategoryUUID, 1, 25);  // not updating the list so reload for now.
+              //todo implement   this._cdr.detectChanges(); and remove the load function
+            self._cdr.detectChanges();
+            console.log('measures.component.ts saveMeasure this.selectedMeasure.Category:', this.selectedMeasure.Category);
         }, err => {
-            this.loadingData = false;
-            this.msgBox.ShowResponseMessage(err.status);
+            self.loadingData = false;
+            self.msgBox.ShowResponseMessage(err.status);
 
             if (err.status === 401) {
-                this._sessionService.clearSession();
+                self._sessionService.clearSession();
                 setTimeout(() => {
-                    this._router.navigate(['/membership/login'], { relativeTo: this._route });
+                    self._router.navigate(['/membership/login'], { relativeTo: this._route });
                 }, 3000);
             }
         });
     }
 
     cboCategoryChange(categoryUUID) {
-        this.selectedCategoryUUID = categoryUUID;
+        console.log('measures.component.ts cboCategoryChange ');
+        this.selectedMeasure.Category = categoryUUID;
+
     }
 
     loadCategoriesDropDown() {
+        console.log('measures.component.ts loadCategoriesDropDown ');
        this.loadingData = true;
         const filter = new Filter();
         const screen = new Screen();
@@ -265,12 +262,6 @@ export class MeasuresComponent implements OnInit {
             }
 
             this.categories = response.Result;
-
-            if (this.categories.length > 0) {
-
-                const c = new Category();
-                this.selectedCategoryUUID = '';
-            }
         }, err => {
             this.msgBox.ShowResponseMessage(err.status);
             this.loadingData = false;

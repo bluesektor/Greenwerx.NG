@@ -14,7 +14,6 @@ import { BasicValidators } from '../common/basicValidators';
 @Component({
     selector: 'tm-address', // <tm-address [address]=shoppingCart?.Address></tm-address>
     templateUrl: './address.component.html',
-    providers: [SessionService, AppService]
 
 })
 export class AddressComponent implements OnInit {

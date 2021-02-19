@@ -10,7 +10,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          [totalRecords]="listCount"
                          selectionMode="single"
                          [(selection)]="currency"
-                         (onRowSelect)="onRowSelect($event.data)"
+                         
                          [paginator]="true"
                          rows="25"
                          [responsive]="true"
@@ -18,7 +18,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                          (onLazyLoad)="lazyLoadFinanceAccountList($event)">
 
                          <ng-template pTemplate="header">
-                            <tr>
+                            <tr  >
                                 <th>Name</th>
                                 <th>AccountNumber</th>
                                 <th>CurrencyName</th>
@@ -28,12 +28,16 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
-                            <tr>
+                            <tr  (click)="onRowSelect($event.data, data )">
                                 <td>  
+                                    {{data.Name}}
+                                    <!--
                                     <ng-template let-listItem="rowData" pTemplate="body">
-                                    <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;" (click)="onRowSelect(listItem)" />
-                                    <label (click)="onRowSelect(listItem)">{{listItem.Name}}</label>
+                                    <img src="{{baseUrl}}{{listItem.Image}}" style="height:32px;"  />
+                                    <label  >{{listItem.Name}}</label>
                                     </ng-template>
+                                -->
+
                                 </td>
                                  <td>{{data.AccountNumber}}</td>
                                  <td>  <ng-template let-listItem="rowData" pTemplate="body">
@@ -63,15 +67,15 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     
    
             <!--Dialog for  crud actions -->
-            <p-dialog header="FinanceAccount Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
-                <div class="ui-grid ui-grid-responsive ui-fluid" *ngIf="selectedItem">
+            <p-dialog *ngIf="selectedItem !== null" header="FinanceAccount Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
+                <div  class="ui-grid ui-grid-responsive ui-fluid"  >
                     <div class="form-group">
                         <label for="Name">Name</label>
                         <input pInputText id="Name" [(ngModel)]="selectedItem.Name" class="input-sm form-control" />
                     </div>
                     <div class="form-group">
 
-                        <img src="{{baseUrl}}{{selectedItem.Image}}" style="width:64px;height:64px;"   />
+                        <img src="{{selectedItem.Image}}" style="width:64px;height:64px;"   />
                         <p-fileUpload  name="uploadedFiles[]" url="{{fileUploadUrl}}{{selectedItem.UUID}}/{{selectedItem.UUIDType}}"
                                       id="{{selectedItem.UUID}}"
                                       (onBeforeSend)="onBeforeSendFile($event)"
@@ -87,14 +91,30 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                     </div>
                     <div class="form-group">
                         <label for="cboAccountCurrencies">Currency</label>
+                       
+                        <!--
                          <p-autoComplete [(ngModel)]="selCurrency" 
                                         [suggestions]="filteredCurrencies" 
+                                        field="Name"
                                         (completeMethod)="filterCurrencies($event)"
-                                        [minLength]="1" placeholder="Hint: type 'v' or 'f'"  [size]="30" [dropdown]="true" 
-                                        (onDropdownClick)="handleDropdownClick( )"
+                                        [minLength]="1" placeholder="Hint: type 'v' or 'f'" 
+                                         [size]="30" [dropdown]="true" 
+                                        (onDropdownClick)="handleDropdownClick($event )"
                                         (onSelect)="onSelectCurrency($event)"
                                           >
                         </p-autoComplete>
+                         <option value="">Select a currency</option>
+                    -->
+                        <select class="form-control input-sm" id="cboCategories" name="cboCategories"
+                                [(ngModel)]="selectedItem.CurrencyUUID"
+                                (ngModelChange)="onSelectCurrency($event)">
+                           
+                            <option *ngFor="let currency of currencies;let i = index;" 
+                                [attr.selected]="selectedItem.CurrencyUUID === currency.UUID" value="{{currency.UUID}}">
+                                {{currency.Name}}
+                            </option>
+                        </select>
+
                     </div>
                     <div class="form-group">
                         <p-checkbox [(ngModel)]="selectedItem.Active" label="Active" binary="selectedItem.Active"></p-checkbox>
@@ -110,7 +130,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="ClientCode">Clien tCode</label>
+                        <label for="ClientCode">Client Code</label>
                         <input pInputText id="ClientCode"  
                             [(ngModel)]="selectedItem.ClientCode" class="input-sm form-control" />
                     </div>

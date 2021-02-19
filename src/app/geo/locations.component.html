@@ -20,7 +20,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
             <p-table [value]="locations"
                          selectionMode="single"
                          [(selection)]="location"
-                         (onRowSelect)="onRowSelect($event)"
+                        
                          [paginator]="true"
                          rows="25"
                          [responsive]="true"
@@ -31,7 +31,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                
              
                 <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
-                    <tr (click)="onRowSelect($event)">
+                    <tr (click)="onRowSelect($event, data)">
                         <td>{{data.Name}}</td>
                         
                     </tr>
@@ -70,19 +70,21 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                             (onSelect)="onSelectAccount($event)"
                             >
                         </p-autoComplete>
+                        
                     -->
                         <select class="form-control input-sm" id="cboAccounts" name="cboAccounts"
                                 [(ngModel)]="selectedAccount"
                                 (ngModelChange)="handleAccountDropdownClick($event)">
-                            <option [attr.selected]="selectedAccount.UUID == ''"  value="">Select Account</option>
-                            <option *ngFor="let account of filteredAccounts;let i = index;" [attr.selected]="selectedAccount.UUID == account.UUID" value="{{account.UUID}}">
+                                <option [attr.selected]="selectedAccount.UUID == ''"  value="">Select Account</option>
+                                <option *ngFor="let account of filteredAccounts;let i = index;"
+                                [attr.selected]="selectedAccount.UUID === account.Name" value="{{account.UUID}}">
                                 {{account.Name}}
                             </option>
                         </select>
                         
                         <div *ngIf="isSuperAdmin === true"></div>
                         <p-checkbox label="View All Accounts" [(ngModel)]="allowAllAcocunts" binary="allowAllAcocunts" 
-                        (click)="toggleViewAllAcocunts($event )"></p-checkbox>
+                        (click)="toggleViewAllAccounts($event )"></p-checkbox>
                     </div>
 
                     <div class="form-group">
@@ -93,7 +95,7 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 <option *ngFor="let locationType of locationTypes;" value="{{locationType}}">
                                     {{locationType}}
                                 </option>
-                                <option value="custom"   >Custom...</option>
+                                <option value="custom" >Custom...</option>
                             </select>
                             <input *ngIf="location.LocationType == 'custom'"    [(ngModel)]="customLocation" pInputText id="LocationType"  class="input-sm form-control" />
                     </div>
@@ -108,22 +110,26 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 <input pInputText id="Address2" [(ngModel)]="location.Address2" class="input-sm form-control" />
                             </div>
                             <div class="form-group">
-                                <label for="Country">Country</label>
+                                <label for="Country">Country: {{location.Country}}</label>
                                 <select class="form-control input-sm" id="cboCountries" name="cboCountries"
                                         [(ngModel)]="location.Country"
-                                         (ngModelChange)="loadStates($event)"
-                                         >
-                                    <option *ngFor="let country of countries;" value="{{country.UUID}}"  [attr.selected]="location.Country === country.UUID"  >
+                                         (ngModelChange)="loadStates($event)">
+                                         <!--todo country is not properly selected, probably loading to late.
+                                        maybe add a flag in the class instead as selected and when loaded use country.Selected === true
+                                        rather than location.Country === country.UUID -->
+                                    <option *ngFor="let country of countries;" value="{{country.Name}}"  
+                                        [attr.selected]="country.Selected"  >
                                         {{country.Name}}
                                     </option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="State">State</label>
+                                <label for="State">State {{location.State}}</label>
                                 <select class="form-control input-sm" id="cboState" name="cboState"
                                         [(ngModel)]="location.State"
                                         (ngModelChange)="loadCities($event)">
-                                    <option *ngFor="let state of states;" value="{{state.UUID}}" [attr.selected]="location.State === state.UUID" >
+                                    <option *ngFor="let state of states;" value="{{state.Name}}" 
+                                        [attr.selected]="state.Selected" >
                                         {{state.Name}}
                                     </option>
                                 </select>
@@ -132,7 +138,8 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
                                 <label for="City">City</label>
                                 <select class="form-control input-sm" id="cboState" name="cboState"
                                         [(ngModel)]="location.City" >
-                                    <option *ngFor="let city of cities;" value="{{city.UUID}}"  [attr.selected]="location.City === city.UUID" >
+                                    <option *ngFor="let city of cities;" value="{{city.Name}}"  
+                                        [attr.selected]="city.Selected" >
                                         {{city.Name}}
                                     </option>
                                 </select>

@@ -1,7 +1,7 @@
 ﻿// Copyright 2015, 2017 GreenWerx.org.
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CheckboxModule, FileUploadModule } from 'primeng/primeng';
 
@@ -17,7 +17,6 @@ import {Api} from '../services/api';
 
 @Component({
     templateUrl: './payoptions.component.html',
-    providers: [SessionService, FinanceService, AppService]
 
 })
 export class PayOptionsComponent implements OnInit {
@@ -43,7 +42,8 @@ export class PayOptionsComponent implements OnInit {
         private _route: ActivatedRoute,
         private _appService: AppService,
         private _sessionService: SessionService,
-        private _financeaccountService: FinanceService) {
+        private _financeaccountService: FinanceService,
+        private _cdr: ChangeDetectorRef) {
        
     }
 
@@ -139,6 +139,7 @@ export class PayOptionsComponent implements OnInit {
                 this.listData.splice(index, 1);
                 this.msgBox.ShowMessage('info', 'FinanceAccount deleted.');
                 this.loadFinanceAccounts(1, 25); // not updating the list so reload for now.
+                  //todo implement   this._cdr.detectChanges(); and remove the load function
             }, err => {
                 this.processingRequest = false;
                 this.msgBox.ShowResponseMessage(err.status);
@@ -157,7 +158,15 @@ export class PayOptionsComponent implements OnInit {
     save() {
         this.msgBox.closeMessageBox();
         this.processingRequest = true;
-        const res =  this._financeaccountService.updateFinanceAccount(this.selectedItem);
+        var res = null;
+
+        if(this.newItem === true){
+            res = this._financeaccountService.addFinanceAccount(this.selectedItem);
+        }else{
+            res =  this._financeaccountService.updateFinanceAccount(this.selectedItem);
+
+        }
+         
 
 
         res.subscribe(response => {
@@ -172,14 +181,15 @@ export class PayOptionsComponent implements OnInit {
 
             if (this.newItem) {// add
                 this.msgBox.ShowMessage('info', 'FinanceAccount added');
+                this.selectedItem = response.Result;
                 this.listData.push(this.selectedItem);
             } else { // update
                 this.msgBox.ShowMessage('info', 'FinanceAccount updated'   );
                 this.listData[this.findSelectedItemIndex(this.selectedItem.UUID)] = this.selectedItem;
             }
-            this.selectedItem = null;
+            
             this.newItem = false;
-            this.loadFinanceAccounts(1, 25); // not updating the list so reload for now.
+         this._cdr.detectChanges(); 
         }, err => {
             this.selectedItem = null;
             this.displayDialog = false;

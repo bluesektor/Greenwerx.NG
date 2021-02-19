@@ -24,6 +24,15 @@ export class StoreService  {
         return this.api.invokeRequest('GET', 'api/Store/Cart/' + cartUUID);
     }
 
+    getStores(locaitionUUID:string , filter:Filter){
+        return this.api.invokeRequest('POST', 'api/Stores', filter);
+    }
+    getStoresForAccount(accountUUID:string , filter:Filter){
+        return this.api.invokeRequest('POST', 'api/Stores/Accounts/'+  accountUUID, filter);
+    }
+
+    
+
     getNewShoppingCart() {
         return this.api.invokeRequest('GET', 'api/Store/NewCart');
     }

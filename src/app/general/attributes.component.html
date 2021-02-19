@@ -1,0 +1,113 @@
+<!--
+Copyright (c) 2017 GreenWerx.org.
+Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
+-->
+<br/>
+<app-messageboxes></app-messageboxes>
+    <h4>Attributes</h4>
+    <p-table [value]="attributes"       
+             selectionMode="single"
+             [(selection)]="attribute"
+             [paginator]="true" rows="15" [responsive]="true">
+  
+             <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                <tr  (click)="onRowSelect($event, data)">
+                    <td>{{data.Name}}</td>
+                    <td>{{data.Value}}</td>
+                </tr>
+            </ng-template>
+         
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td >
+                    <div class="ui-helper-clearfix" style="width:25%">
+                        <button type="button" class="form-control input-sm" value="Add"
+                                (click)="showDialogToAdd()" label="Add">
+                            <i class="fa fa-plus" style="color:green;"></i> Add
+                        </button>
+                    </div>
+                 </td>
+                </tr>
+            </ng-template>
+</p-table>
+
+<!--Dialog for  crud actions -->
+<p-dialog  header="Attribute Details" [(visible)]="displayDialog" [responsive]="true" showEffect="fade" [modal]="true">
+    <div  class="ui-grid ui-grid-responsive ui-fluid" *ngIf="attribute">
+        <div>
+            <img *ngIf="attribute.Image" src="{{attribute?.Image|getImageThumbPipe}}" style="width:64px;height:64px;" (click)="editImage = !editImage" />
+        </div>
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <input pInputText id="Name" [(ngModel)]="attribute.Name" class="input-sm form-control" />
+        </div>
+        <div class="form-group">
+            <label for="Value">Value</label>
+            <input pInputText id="Value" [(ngModel)]="attribute.Value" class="input-sm form-control" />
+        </div>
+        <div class="form-group">
+            <label for="cboDatatypes">Data Type</label>  
+            <select class="form-control input-sm" id="cboDatatypes" name="cboDatatypes"
+                    [(ngModel)]="attribute.ReferenceType"
+                    (ngModelChange)="cboDataTypeChange($event)">
+                    <option [attr.selected]="'' === attribute.ReferenceType"  value="">Select Type..</option>
+                <option *ngFor="let type of dataTypes;" value="{{type}}"
+                [attr.selected]="type === attribute.ReferenceType" >
+                    {{type}}
+                </option>
+            </select> 
+        </div>
+  
+        <div class="form-group"> 
+            <h4>Type Data</h4>
+            <p-table [value]="dataForType"       
+                    selectionMode="single"
+                    [(selection)]="dataItem"
+                   > 
+                    [paginator]="true" rows="15"  >
+
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body"  let-data let-ri="rowIndex" >
+                        <tr id="att{{data.UUID}}"  
+                        [class]="data.UUID === attribute.ReferenceUUID ? 'selectedRow' : 'unselectedRow'" 
+                
+                         (click)="onRowSelectDataItem($event, data)">
+                            <td>{{data.Name}}</td>
+                            <td>{{data.UUID}}</td>
+                        </tr>
+                    </ng-template>
+                
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td >
+                            <div class="ui-helper-clearfix" style="width:25%">
+                               
+                            </div>
+                        </td>
+                        </tr>
+                    </ng-template>
+            </p-table>
+<!-- -------------------------------------------------------------------------------------------------------------------------------------- -->
+        </div>
+    </div>
+    <p-footer>
+        <div class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix" style="text-align:center;">
+            <button type="button" style="display: block; margin: 0 auto;  margin-top:10px;" pButton class="form-control input-sm" (click)="save()" label="Save"><i class="fa fa-check" style="color:green;"></i> Save</button>
+            <button type="button" style="display: block; margin: 0 auto;  margin-top:10px; margin-bottom:10px;" pButton class="form-control input-sm" (click)="cancel()" label="Cancel"><i class="fa fa-close"></i> Cancel</button>
+            <button type="button" style="display: block; margin: 0 auto;" pButton class="form-control input-sm" (click)="onClickDeleteAttribute()" label="Delete"><i class="fa fa-trash" style="color:red;"></i> Delete</button>
+        </div>
+    </p-footer>
+</p-dialog>

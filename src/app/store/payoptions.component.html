@@ -31,10 +31,10 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
               
 
                          <ng-template pTemplate="body" let-item>
-							<tr>
+							<tr  (click)="onRowSelect(item)">
                                 <td  >
-                                        <img src="{{baseUrl}}{{item.Image}}" style="height:32px;" (click)="onRowSelect(item)" />
-                                        <label (click)="onRowSelect(item)">{{item.Name}}</label>
+                                        <img src="{{item.Image}}" style="height:32px;"   />
+                                        <label>{{item.Name}}</label>
                                 </td>
                                 <td  >{{item.Active}}</td>
 							</tr>
@@ -42,6 +42,12 @@ Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/li
               
 
                 <ng-template pTemplate="footer">
+                    <div class="cell-block" style="width:25%">
+                        <button type="button" class="form-control input-sm" value="Add"
+                                (click)="showDialogToAdd()" label="Add">
+                            <i class="fa fa-plus" style="color:green;"></i> Add
+                        </button>
+                    </div>
                 </ng-template>
             </p-table>
 

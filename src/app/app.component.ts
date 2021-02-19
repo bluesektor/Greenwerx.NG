@@ -2,6 +2,7 @@
 // Licensed under CPAL 1.0,  See license.txt  or go to http://greenwerx.org/docs/license.txt  for full license details.
 
 import { Component, OnInit, ViewChild, HostListener ,OnDestroy , AfterViewInit } from '@angular/core';
+import {  Renderer2, RendererFactory2  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NavBarAdminComponent } from './navbar.admin.component';
 import { NavBarDefaultComponent } from './navbar.default.component';
@@ -14,6 +15,11 @@ import { Screen } from '../app/models/screen';
 import {MessagePump}  from '../app/common/message.pump';
 import { Subscription} from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import {Setting} from '../app/models/setting';
+import { AppSetting } from '../app/app.settings';
+import * as _ from 'lodash';
+import { ObjectFunctions } from './common/object.functions';
+import { HttpClient } from '@angular/common/http';
 /*
 import { Location } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -23,7 +29,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Events, MenuController, Platform, AlertController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationsService } from 'angular2-notifications';
-import { AppSetting } from '../app/app.settings';
+
 import { Filter, Screen } from '../app/models/index';
 import { AffiliateService } from '../app/services/common/affiliate.service';
 import { PostService } from '../app/services/documents/post.service';
@@ -52,12 +58,11 @@ import {Api} from '../app/services/api/api';
   providers: [MessageBoxesComponent] 
 })
 export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
-
-    pageSettings: any;
-
+  private renderer: Renderer2;
+    serverSettings: Setting[] = [];//settings from the settings table 
     collapseDiv = false;
     minHeight = 230;
-
+    appId = '';
     processingRequest = false;
     currentYear: number;
     domainName: string;
@@ -92,17 +97,20 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
     constructor(
       private _appService: AppService,
         private _sessionService: SessionService,
+        private http: HttpClient,
         private _messagePump:MessagePump,
         private _router: Router,
         private _route: ActivatedRoute,
         private msgBox:MessageBoxesComponent,
+        private rendererFactory: RendererFactory2,
         private translate: TranslateService,
+        private appSettings: AppSetting,
         /* private apiService: Api,
     public alertController: AlertController,
     private cookieService: CookieService,
     private affiliateService: AffiliateService,
     private location: Location,
-    private appSettings: AppSetting,
+   
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
@@ -122,7 +130,30 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
     private filterService: FilterService
         */
         ) {
+          this.renderer = rendererFactory.createRenderer(null, null);
             console.log('app.component.ts constructor');
+            if(ObjectFunctions.isValid(this.appSettings.settings ) === false) {
+              this.http //Must load the manifest before settings
+              .get('assets/manifest.json') .subscribe(manifestResponse => {
+                console.log('APP.SETTINGS.TS res:', manifestResponse);
+                this.appSettings.manifest = manifestResponse;
+                console.log('APP.SETTINGS.TS manifest:', this.appSettings.manifest);
+                console.log('app.settings.ts  loadSettings');
+                  
+                this.appSettings.loadSettings$().subscribe(settingsResponse => {
+                  if ( ObjectFunctions.isValid( settingsResponse ) === false) {
+                    return;
+                  }
+                  this.appSettings.settings=  settingsResponse;
+                  this.appId =  this.appSettings.settings.appid;
+                  this._sessionService.CurrentSession.DefaultLocationUUID = this.appSettings.settings.defaultLocationUUID;
+                  //this._sessionService.CurrentSession.DefaultAccountUUID = this.appSettings.settings.defaultAccountUUID;
+                  this.renderer.addClass(document.body, this.appSettings.settings.theme);
+                  this._messagePump.publish('settings:loaded', { msg: 'message', time: new Date() });
+                  this.loadApp();
+            });
+          });
+            }
          }
 
     checkLoginStatus() {
@@ -132,7 +163,38 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
       return this.loggedIn;
     }
 
+    getServerSettings() {
+
+      this.processingRequest = true;
+      const filter = new Filter();
+      filter.PageResults = true;
+      filter.StartIndex = 1;
+      filter.PageSize = 100;
+      const screen = new Screen();
   
+     //One of the settings we'll need is the default account uuid, we'll
+     //use it to get the default location so we can load the menu, events etc.
+     //according to the store and location.
+      screen.Command = 'SearchBy';
+      screen.Field = 'UUParentID';
+      screen.Operator = 'CONTAINS';
+      screen.Value = this.appId ; //look for this apps settings
+      filter.Screens.push(screen);
+      this._appService.getPublicSettings(filter).subscribe(settingResponse => {
+          this.processingRequest = false;
+          if (settingResponse.Code !== 200) {
+              this.msgBox.ShowMessage('error', settingResponse.Message);
+              return false;
+          }
+          this.serverSettings = settingResponse.Result;
+        //  NOTE: todo for this setting make sure the name is consistent, in admin make a flag or hard code it.
+        let settingName = 'Default Account UUID'.toLowerCase();
+        let setting =   _.filter(settingResponse.Result, x => x.Name.toLowerCase() === settingName) as Setting[];
+        if(ObjectFunctions.isValid(setting) && setting.length > 0)
+          this._sessionService.CurrentSession.AccountUUID = setting[0].Value;
+          // this._sessionService.CurrentSession.DefaultLocationUUID =  setting.Value;   
+      });
+    }
 
     private initTranslate(language: string) {
       console.log('app.components.ts _initTranslate()');
@@ -142,7 +204,7 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
     ngOnInit() {
         console.log('app.component.ts ngOnInit');
         this.currentYear = new Date().getFullYear();
-        this.loadApp();
+       // this.loadApp();
          
       
         this._sessionService.loadSession();  
@@ -194,28 +256,9 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
                 return;
             }
 
-            this.processingRequest = true;
-            const filter = new Filter();
-            filter.PageResults = true;
-            filter.StartIndex = 1;
-            filter.PageSize = 100;
-            const screen = new Screen();
-            screen.Command = 'SearchBy';
-            screen.Field = 'Name';
-            screen.Operator = 'CONTAINS';
-            screen.Value = 'SiteDomain'; // for now we just need domain name.
-            filter.Screens.push(screen);
-            this._appService.getPublicSettings(filter).subscribe(settingResponse => {
-                this.processingRequest = false;
-                if (settingResponse.Code !== 200) {
-                    this.msgBox.ShowMessage('error', response.Message);
-                    return false;
-                }
-                if (settingResponse.Result.length > 0) {
-                    this.domainName = settingResponse.Result[0].Value;
-                }
-            });
-
+         //todo load all settings for appid
+         // 
+            this.getServerSettings();
         }, err => {
             this.processingRequest = false;
             // Show everything but the session time out.
@@ -224,6 +267,8 @@ export class AppComponent implements OnInit,  OnDestroy, AfterViewInit {
             }
         });
     }
+
+
    // Global logout, use
   //  this._messagePump.publish('user:logout');
   // to trigger the event that calls this function.

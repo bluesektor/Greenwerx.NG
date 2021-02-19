@@ -21,10 +21,9 @@ export class Session {
 
     IsAdmin: boolean;
 
-    DefaultLocationUUID: string
+    DefaultLocationUUID: string;
 
-    SessionExpires: Date;
-
+   
     UUID: string;
 
     UUIDType: string;
