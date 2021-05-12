@@ -27,7 +27,7 @@
     "@ngx-translate/http-loader": "^6.0.0",
     "angular2-cookie": "^1.2.6",
     "angular2-notifications": "^9.0.0",
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "jwt-decode": "^2.2.0",
     "linqts": "^1.14.2",
     "ngx-webstorage-service": "^4.1.0",
